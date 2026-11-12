@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#123A63">
+    <title>Seaside Café - 線上點餐</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@600;700;900&family=Playfair+Display:ital,wght@0,600;0,800;1,600&family=Pacifico&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        vintage: {
+                            paper: 'rgb(var(--c-paper) / <alpha-value>)',
+                            cardBg: 'rgb(var(--c-cardBg) / <alpha-value>)',
+                            woodDark: 'rgb(var(--c-woodDark) / <alpha-value>)',
+                            woodLight: 'rgb(var(--c-woodLight) / <alpha-value>)',
+                            terracotta: 'rgb(var(--c-terracotta) / <alpha-value>)',
+                            mangoGold: 'rgb(var(--c-mangoGold) / <alpha-value>)',
+                            palmGreen: 'rgb(var(--c-palmGreen) / <alpha-value>)',
+                            borderGold: 'rgb(var(--c-borderGold) / <alpha-value>)',
+                            stampRed: 'rgb(var(--c-stampRed) / <alpha-value>)'
+                        }
+                    },
+                    fontFamily: {
+                        serif: ['"Noto Serif TC"', '"Playfair Display"', 'serif'],
+                        sans: ['"Noto Sans TC"', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        :root { --c-paper: 251 245 230; --c-cardBg: 255 253 247; --c-woodDark: 18 58 99; --c-woodLight: 42 111 163; --c-terracotta: 28 120 181; --c-mangoGold: 242 169 59; --c-palmGreen: 46 139 87; --c-borderGold: 126 195 221; --c-stampRed: 229 138 31; --header-h: 56px; --sea-bg: none; }
+        body {
+            background-color: rgb(var(--c-paper));
+            background-image: radial-gradient(#EADFC6 1px, transparent 1px);
+            background-size: 24px 24px;
+            color: rgb(var(--c-woodDark));
+            font-family: 'Noto Sans TC', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body.modal-open { overflow: hidden; }
+        .vintage-title { font-family: 'Noto Serif TC', 'Playfair Display', serif; }
+        .brand-script { font-family: 'Pacifico', 'Noto Serif TC', cursive; font-weight: 400; letter-spacing: .02em; }
+        .wave-divider { height: 14px; background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='14' viewBox='0 0 40 14'><path d='M0 7 Q10 0 20 7 T40 7' fill='none' stroke='%237EC3DD' stroke-width='2.5'/></svg>") repeat-x center; }
+        .vintage-header {
+            background: linear-gradient(135deg, rgb(var(--c-terracotta)) 0%, rgb(var(--c-woodDark)) 100%);
+            border-bottom: 3px solid rgb(var(--c-mangoGold));
+            box-shadow: 0 4px 20px rgba(18, 58, 99, 0.25);
+        }
+        .vintage-card {
+            background-color: rgb(var(--c-cardBg));
+            border: 1px solid #D6E9F2;
+            box-shadow: 3px 3px 0 #CDE6F1, 0 6px 12px rgba(18, 58, 99, 0.06);
+            transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+        }
+        @media (hover: hover) {
+            .vintage-card:hover { transform: translateY(-3px); box-shadow: 5px 5px 0 rgb(var(--c-borderGold)), 0 12px 20px rgba(18, 58, 99, 0.14); border-color: rgb(var(--c-terracotta)); }
+            .vintage-card:hover .drink-img { transform: scale(1.06); filter: sepia(0%) contrast(105%); }
+        }
+        .vintage-card.in-cart { border-color: rgb(var(--c-mangoGold)); box-shadow: 3px 3px 0 rgb(var(--c-mangoGold)), 0 6px 12px rgba(18, 58, 99, 0.08); }
+        .drink-img { filter: saturate(105%); transition: transform .5s ease, filter .5s ease; }
+        .vintage-badge { background: rgb(var(--c-mangoGold)); color: #fff; border: 1px solid #FFF3D6; box-shadow: 1px 1px 3px rgba(0,0,0,.3); letter-spacing: .05em; }
+        .vintage-btn {
+            background: linear-gradient(180deg, #2A8CCB 0%, #1C6FA6 100%);
+            border: 1px solid #155C8C; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.3);
+            box-shadow: 0 2px 4px rgba(18,58,99,.2); transition: all .2s ease;
+        }
+        .vintage-btn:hover { background: linear-gradient(180deg, #3A9BD8 0%, #227BB5 100%); }
+        .vintage-btn:disabled { opacity: .5; cursor: not-allowed; }
+        .vintage-btn-secondary { background: rgb(var(--c-cardBg)); border: 1.5px solid rgb(var(--c-woodLight)); color: rgb(var(--c-woodDark)); }
+        .vintage-btn-secondary:hover { background: rgb(var(--c-woodLight)); color: rgb(var(--c-cardBg)); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { scrollbar-width: none; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: rgb(var(--c-paper)); }
+        ::-webkit-scrollbar-thumb { background: rgb(var(--c-borderGold)); border-radius: 4px; }
+        .sticky-under-header { top: var(--header-h); }
+        .side-menu { height: calc(100vh - var(--header-h)); height: calc(100dvh - var(--header-h)); }
+        .section-anchor { scroll-margin-top: calc(var(--header-h) + 12px); }
+        @keyframes bump { 0%,100% { transform: scale(1); } 40% { transform: scale(1.18); } }
+        .bump { animation: bump .35s ease; }
+        @keyframes toastIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+        .toast-in { animation: toastIn .2s ease-out; }
+        .sheet-panel { max-height: 92vh; max-height: 92dvh; }
+        .safe-bottom { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+        .opt-check { display: none; }
+        input:checked + span .opt-check { display: inline-block; }
+        body {
+            background: rgb(var(--c-paper)) var(--sea-bg) center top / cover fixed no-repeat;
+        }
+        @media (max-width: 767px) { body { background-attachment: scroll; background-size: 220% auto; background-position: center top; } }
+        #catBar { background: rgba(255,253,247,.82); backdrop-filter: blur(4px); }
+        .vintage-card { background-color: rgba(255,253,247,.93); }
+        #menuSections > section { background: rgba(255,251,240,.55); border-radius: 18px; padding: 10px; backdrop-filter: blur(2px); }
+    </style>
+    <style>body.no-order [data-act="open-cart"], body.no-order #cartBar, body.no-order .order-pill { display: none !important; }.hidden-empty { display: none !important; }
+    </style>
+    <style id="site-custom-css"></style>
+    <!-- ===================================================================
+         SITE CONFIG — 網站內容全部在這裡（店名、顏色、背景、分類、菜單）。
+         用 builder.html 產生；手動修改請保持 JSON 格式正確。
+         Claude 修改設計時：不要刪除這個區塊，也不要改元素的 id / data-act。
+         =================================================================== -->
+    <script id="site-config" type="application/json">{"configVersion":1,"shop":{"name":"Seaside Café","badge":"海邊咖啡館","subtitle":"陽光・海風・咖啡・和你 ☺","icon":"fa-sun","heroTagline":"〜 一杯飲品・一份海洋風味 〜","heroTitle":"Seaside Café","heroText1":"好喝的飲品・美好的心情・從海邊開始 ♥","heroText2":"Good drinks, good mood — starting from the seaside ♥","footerText1":"在這裡，不只是咖啡，還有海風、陽光和好時光 ♥","footerText2":"金額均以新台幣 (NT$) 計價・All prices in NT$","copyright":"© 2026 Seaside Café. All rights reserved.","cartText":"購物籃","allLabel":"全部菜單 All","allIcon":"fa-umbrella-beach","lineId":"","ordering":true},"payments":["現金 Cash","LINE Pay","街口支付"],"pickup":[[0,"盡快（約 10–15 分鐘）"],[20,"20 分鐘後"],[30,"30 分鐘後"],[60,"1 小時後"]],"colors":{"paper":"#FBF5E6","cardBg":"#FFFDF7","woodDark":"#123A63","woodLight":"#2A6FA3","terracotta":"#1C78B5","mangoGold":"#F2A93B","palmGreen":"#2E8B57","borderGold":"#7EC3DD","stampRed":"#E58A1F"},"background":"","customCss":"","categories":[{"key":"main","name":"主餐 Main Course","icon":"fa-utensils","drink":false},{"key":"cold","name":"冷飲 Cold Drinks","icon":"fa-glass-water","drink":true},{"key":"hot","name":"熱飲 Hot Drinks","icon":"fa-mug-hot","drink":true,"ice":["熱飲"]},{"key":"dessert","name":"甜點 Dessert","icon":"fa-cake-candles","drink":false}],"menu":[{"id":1,"title":"香烤海鮮拼盤","subtitle":"Grilled Seafood Platter","desc":"鮮蝦・干貝・魷排・蒜蓉","price":500,"category":"main","tags":["人氣推薦"],"imgUrl":"https://images.unsplash.com/photo-1615141982883-c7ad0e69fd62?auto=format&fit=crop&w=600&q=80"},{"id":2,"title":"奶油白醬海鮮義大利麵","subtitle":"Seafood Pasta with Cream Sauce","desc":"鮮蝦・蛤蜊・中卷・香草","price":480,"category":"main","tags":[],"imgUrl":"https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?auto=format&fit=crop&w=600&q=80"},{"id":3,"title":"番茄海鮮義大利麵","subtitle":"Seafood Pasta in Tomato Sauce","desc":"鮮蝦・蛤蜊・小卷・番茄醬","price":460,"category":"main","tags":[],"imgUrl":"https://images.unsplash.com/photo-1563379926898-05f4575a45d8?auto=format&fit=crop&w=600&q=80"},{"id":4,"title":"香煎雞腿排佐時蔬","subtitle":"Grilled Chicken Thigh with Vegetables","desc":"雞腿排・季節時蔬・香草醬","price":450,"category":"main","tags":[],"imgUrl":"https://images.unsplash.com/photo-1532550907401-a500c9a57435?auto=format&fit=crop&w=600&q=80"},{"id":5,"title":"紐西蘭牛排佐黑胡椒醬","subtitle":"NZ Steak with Black Pepper Sauce","desc":"牛排・薯條・時蔬","price":480,"category":"main","tags":[],"imgUrl":"https://images.unsplash.com/photo-1600891964092-4316c288032e?auto=format&fit=crop&w=600&q=80"},{"id":6,"title":"田園蔬食沙拉碗","subtitle":"Garden Salad Bowl","desc":"新鮮蔬菜・季節水果・堅果","price":400,"category":"main","tags":["素食"],"imgUrl":"https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=600&q=80"},{"id":7,"title":"芒果冰沙","subtitle":"Mango Smoothie","desc":"","price":290,"category":"cold","tags":["人氣推薦"],"imgUrl":"https://images.unsplash.com/photo-1546173159-315724a31696?auto=format&fit=crop&w=600&q=80"},{"id":8,"title":"檸檬氣泡飲","subtitle":"Lemon Sparkling Soda","desc":"","price":250,"category":"cold","tags":[],"imgUrl":"https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=600&q=80"},{"id":9,"title":"藍柑橘氣泡飲","subtitle":"Blue Curaçao Soda","desc":"","price":260,"category":"cold","tags":[],"imgUrl":"https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=600&q=80"},{"id":10,"title":"莓果冰茶","subtitle":"Berry Iced Tea","desc":"","price":260,"category":"cold","tags":[],"imgUrl":"https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&w=600&q=80"},{"id":11,"title":"冰美式咖啡","subtitle":"Iced Americano","desc":"","price":220,"category":"cold","tags":[],"imgUrl":"https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&w=600&q=80"},{"id":12,"title":"冰拿鐵","subtitle":"Iced Latte","desc":"","price":240,"category":"cold","tags":[],"imgUrl":"https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&w=600&q=80"},{"id":22,"title":"冰巧克力","subtitle":"Iced Chocolate","desc":"","price":270,"category":"cold","tags":[],"imgUrl":"https://images.unsplash.com/photo-1542990253-0d0f5be5f0ed?auto=format&fit=crop&w=600&q=80"},{"id":23,"title":"冰抹茶拿鐵","subtitle":"Iced Matcha Latte","desc":"","price":290,"category":"cold","tags":[],"imgUrl":"https://images.unsplash.com/photo-1515823064-d6e0c04616a7?auto=format&fit=crop&w=600&q=80"},{"id":13,"title":"香草拿鐵","subtitle":"Vanilla Latte","desc":"","price":280,"category":"hot","tags":["人氣推薦"],"imgUrl":"https://images.unsplash.com/photo-1572442388796-11668a67e53d?auto=format&fit=crop&w=600&q=80"},{"id":14,"title":"焦糖瑪奇朵","subtitle":"Caramel Macchiato","desc":"","price":270,"category":"hot","tags":[],"imgUrl":"https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=600&q=80"},{"id":15,"title":"玫瑰奶茶","subtitle":"Rose Milk Tea","desc":"","price":250,"category":"hot","tags":[],"imgUrl":"https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=600&q=80"},{"id":16,"title":"熱巧克力","subtitle":"Hot Chocolate","desc":"","price":240,"category":"hot","tags":[],"imgUrl":"https://images.unsplash.com/photo-1578314675249-a6910f80cc4e?auto=format&fit=crop&w=600&q=80"},{"id":17,"title":"洋甘菊花茶","subtitle":"Chamomile Tea","desc":"","price":220,"category":"hot","tags":[],"imgUrl":"https://images.unsplash.com/photo-1544787219-7f47ccb76574?auto=format&fit=crop&w=600&q=80"},{"id":24,"title":"錫蘭紅茶","subtitle":"Ceylon Black Tea","desc":"","price":200,"category":"hot","tags":[],"imgUrl":"https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?auto=format&fit=crop&w=600&q=80"},{"id":18,"title":"海鹽焦糖布丁","subtitle":"Sea Salt Caramel Pudding","desc":"","price":320,"category":"dessert","tags":[],"imgUrl":"https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=600&q=80"},{"id":19,"title":"提拉米蘇","subtitle":"Tiramisu","desc":"","price":350,"category":"dessert","tags":[],"imgUrl":"https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?auto=format&fit=crop&w=600&q=80"},{"id":20,"title":"藍莓起司蛋糕","subtitle":"Blueberry Cheesecake","desc":"","price":360,"category":"dessert","tags":[],"imgUrl":"https://images.unsplash.com/photo-1533134242443-d4fd215305ad?auto=format&fit=crop&w=600&q=80"},{"id":21,"title":"巧克力布朗尼","subtitle":"Chocolate Brownie","desc":"","price":380,"category":"dessert","tags":[],"imgUrl":"https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=600&q=80"},{"id":25,"title":"季節水果塔","subtitle":"Seasonal Fruit Tart","desc":"","price":400,"category":"dessert","tags":[],"imgUrl":"https://images.unsplash.com/photo-1519915028121-7d3463d20b13?auto=format&fit=crop&w=600&q=80"}],"drinkOptions":{"ice":["正常冰","少冰","微冰","去冰"],"sugar":["全糖 (100%)","七分糖 (70%)","半糖 (50%)","微糖 (30%)","無糖 (0%)"],"toppings":[{"name":"加濃縮","price":20},{"name":"燕麥奶","price":20},{"name":"鮮奶油","price":15},{"name":"椰果","price":10},{"name":"棉花糖","price":10},{"name":"芒果果肉","price":20}]}}</script>
+    <script>
+    // 套用顏色 / 背景 / 自訂 CSS（在畫面出現前執行，避免閃一下預設色）
+    window.SITE = JSON.parse(document.getElementById("site-config").textContent);
+    (function (c) {
+        var root = document.documentElement.style;
+        Object.keys(c.colors || {}).forEach(function (k) {
+            var m = /^#?([0-9a-f]{6})$/i.exec(c.colors[k] || "");
+            if (m) { var n = parseInt(m[1], 16); root.setProperty("--c-" + k, (n >> 16) + " " + ((n >> 8) & 255) + " " + (n & 255)); }
+        });
+        var bg = String(c.background || "").replace(/["\\\n]/g, "");
+        root.setProperty("--sea-bg", bg ? 'url("' + bg + '")' : "none");
+        document.getElementById("site-custom-css").textContent = c.customCss || "";
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta && c.colors && c.colors.woodDark) meta.content = c.colors.woodDark;
+    })(window.SITE);
+    </script>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-vintage-mangoGold selection:text-white">
+
+    <!-- ===== Header (admin banner lives inside so nothing overlaps) ===== -->
+    <header id="siteHeader" class="sticky top-0 z-40 vintage-header text-amber-100">
+        <div id="adminBanner" class="hidden bg-gradient-to-r from-vintage-stampRed via-vintage-terracotta to-vintage-stampRed text-amber-50 px-3 py-1.5 text-xs sm:text-sm font-bold flex-wrap items-center justify-between gap-2 border-b border-vintage-borderGold">
+            <div class="flex items-center gap-2"><i class="fa-solid fa-user-gear text-amber-300"></i><span>掌櫃後台編輯模式</span></div>
+            <div class="flex flex-wrap items-center gap-1.5">
+                <button type="button" data-act="open-settings" class="bg-amber-300 hover:bg-amber-400 text-vintage-woodDark px-2.5 py-1 rounded font-black"><i class="fa-solid fa-sliders mr-1"></i>網站文字</button>
+                <button type="button" data-act="new-item" class="bg-vintage-palmGreen hover:bg-emerald-800 text-white px-2.5 py-1 rounded font-black"><i class="fa-solid fa-circle-plus mr-1"></i>新增品項</button>
+                <button type="button" data-act="reset-all" class="bg-black/40 hover:bg-black/60 text-amber-100 px-2.5 py-1 rounded border border-amber-300/40"><i class="fa-solid fa-rotate-left mr-1"></i>重置</button>
+                <button type="button" data-act="exit-admin" class="bg-amber-100 text-vintage-woodDark hover:bg-white px-2.5 py-1 rounded font-black"><i class="fa-solid fa-right-from-bracket mr-1"></i>退出</button>
+            </div>
+        </div>
+
+        <div class="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8">
+            <div class="flex items-center gap-2 sm:gap-3 h-14 md:h-20">
+                <button type="button" data-act="scroll-top" class="flex items-center gap-2.5 min-w-0 text-left" aria-label="回到頂部">
+                    <span class="w-9 h-9 md:w-12 md:h-12 shrink-0 bg-vintage-mangoGold text-vintage-woodDark rounded-full flex items-center justify-center border-2 border-vintage-borderGold">
+                        <i id="brandIcon" class="fa-solid fa-sun md:text-xl"></i>
+                    </span>
+                    <span class="min-w-0">
+                        <span class="flex items-center gap-2">
+                            <span id="siteBrandTitle" class="brand-script text-xl md:text-3xl text-white truncate">Seaside Café</span>
+                            <span id="siteBrandBadge" class="hidden sm:inline text-[10px] font-bold tracking-widest text-vintage-woodDark px-2 py-0.5 bg-vintage-borderGold rounded-sm border border-amber-200 whitespace-nowrap">海邊咖啡館</span>
+                        </span>
+                        <span id="siteBrandSubtitle" class="hidden md:block text-xs text-amber-200/80 tracking-widest font-serif italic mt-0.5 truncate">陽光・海風・咖啡・和你 ☺</span>
+                    </span>
+                </button>
+
+                <div class="hidden md:flex flex-1 max-w-md mx-auto relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-vintage-borderGold"></i>
+                    <input type="search" data-search placeholder="搜尋餐點、飲品、甜點… / Search menu" autocomplete="off"
+                        class="w-full pl-10 pr-4 py-2.5 bg-vintage-woodDark/90 border-2 border-vintage-borderGold/60 rounded-lg text-sm text-amber-100 focus:outline-none focus:border-vintage-mangoGold placeholder-amber-200/40">
+                </div>
+
+                <div class="flex-1 md:hidden"></div>
+                <button type="button" data-act="toggle-search" class="md:hidden w-10 h-10 rounded-lg text-vintage-borderGold hover:text-amber-100 border border-vintage-borderGold/40" aria-label="搜尋">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+                <button type="button" data-act="open-cart" class="relative h-10 px-3 sm:px-4 rounded-lg flex items-center gap-2 bg-vintage-mangoGold hover:bg-amber-400 text-vintage-woodDark border border-amber-200" aria-label="購物籃">
+                    <i class="fa-solid fa-basket-shopping"></i>
+                    <span id="siteCartBtnText" class="hidden sm:inline font-bold text-xs">購物籃</span>
+                    <span id="cartBadge" class="hidden absolute -top-1.5 -right-1.5 sm:static bg-vintage-stampRed text-amber-50 font-black text-[11px] min-w-[20px] h-5 px-1 rounded-full items-center justify-center border border-amber-100">0</span>
+                </button>
+                <button type="button" data-act="admin-lock" hidden title="掌櫃後台" aria-label="掌櫃後台登入"
+                    class="w-10 h-10 shrink-0 bg-vintage-woodDark hover:bg-stone-800 text-vintage-borderGold rounded-lg border border-vintage-borderGold/50">
+                    <i id="adminIcon" class="fa-solid fa-lock"></i>
+                </button>
+            </div>
+            <div id="mobileSearchRow" class="hidden md:hidden pb-2.5">
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-vintage-borderGold"></i>
+                    <input type="search" data-search placeholder="搜尋餐點… / Search" autocomplete="off"
+                        class="w-full pl-10 pr-4 py-2.5 bg-vintage-woodDark border border-vintage-borderGold/60 rounded-lg text-sm text-amber-100 focus:outline-none focus:border-vintage-mangoGold placeholder-amber-200/40">
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ===== Hero ===== -->
+    <section class="relative bg-vintage-woodDark text-amber-100 py-5 sm:py-7 px-4 overflow-hidden border-b-4 border-vintage-borderGold"
+        style="background-image: linear-gradient(rgba(18,58,99,.35), rgba(18,58,99,.70)), var(--sea-bg); background-size: cover; background-position: center;">
+        <div class="max-w-4xl mx-auto relative text-center space-y-2">
+            <div class="inline-block border-y-2 border-vintage-borderGold py-1 px-4 sm:px-6">
+                <span id="heroTagline" class="text-[11px] sm:text-sm font-serif font-bold tracking-widest text-amber-200">〜 一杯飲品・一份海洋風味 〜</span>
+            </div>
+            <h2 id="heroTitle" class="brand-script text-3xl sm:text-5xl text-white drop-shadow-md py-1">Seaside Café</h2>
+            <p id="heroDescriptionZh" class="text-sm sm:text-base text-amber-100/90 font-serif max-w-xl mx-auto italic">好喝的飲品・美好的心情・從海邊開始 ♥</p>
+            <p id="heroDescriptionVi" class="text-xs text-amber-100/85 tracking-wider">Good drinks, good mood — starting from the seaside ♥</p>
+            <div id="tableBanner" class="hidden pt-2">
+                <span class="inline-flex items-center gap-2 bg-vintage-mangoGold text-vintage-woodDark font-black text-sm px-4 py-1.5 rounded-full border-2 border-amber-200 shadow">
+                    <i class="fa-solid fa-chair"></i><span id="tableBannerText"></span>
+                </span>
+            </div>
+        </div>
+    </section>
+
+    <div class="wave-divider"></div>
+
+    <!-- ===== 2 欄：左 = 分類選單 (1/5)，右 = 品項列表 ===== -->
+    <div class="flex-grow w-full max-w-7xl mx-auto flex items-start">
+    <nav id="catBar" class="side-menu w-1/5 shrink-0 sticky sticky-under-header self-start overflow-y-auto no-scrollbar bg-vintage-cardBg/90 border-r-2 border-vintage-borderGold/50" aria-label="菜單分類">
+        <div class="hidden md:block px-4 pt-4 pb-2 text-xs font-bold tracking-widest text-vintage-woodLight">MENU 菜單</div>
+        <div id="catTabs" class="flex flex-col py-1 md:p-2 md:gap-1.5"></div>
+    </nav>
+
+    <!-- ===== Menu ===== -->
+    <main class="flex-1 min-w-0 px-2.5 sm:px-5 lg:px-8 pt-4 pb-32">
+        <div id="searchInfo" class="hidden mb-4 text-sm text-stone-600"></div>
+        <div id="menuSections" class="space-y-8"></div>
+        <div id="emptyState" class="hidden text-center py-16 bg-vintage-cardBg rounded-xl border-2 border-dashed border-vintage-borderGold/60 p-8">
+            <div class="w-16 h-16 bg-vintage-paper rounded-full flex items-center justify-center mx-auto mb-4 text-2xl border border-vintage-borderGold"><i class="fa-solid fa-umbrella-beach"></i></div>
+            <h3 class="vintage-title font-bold text-xl">查無符合的品項</h3>
+            <p class="text-stone-600 text-sm mt-1">請換個關鍵字或分類試試。</p>
+        </div>
+    </main>
+    </div>
+
+    <!-- ===== Footer ===== -->
+    <footer class="bg-vintage-woodDark text-amber-200/80 py-10 pb-28 border-t-4 border-vintage-borderGold">
+        <div class="max-w-7xl mx-auto px-4 text-center space-y-3">
+            <div class="flex justify-center items-center gap-2">
+                <span class="w-8 h-8 bg-vintage-mangoGold text-vintage-woodDark rounded-full flex items-center justify-center font-black text-sm border border-amber-200"><i id="footerIcon" class="fa-solid fa-sun"></i></span>
+                <span id="footerBrandName" class="brand-script text-xl text-amber-100">Seaside Café</span>
+            </div>
+            <p class="text-xs text-amber-200/70 max-w-md mx-auto">
+                <span id="footerTextZh">在這裡，不只是咖啡，還有海風、陽光和好時光 ♥</span><br>
+                <span id="footerTextVi" class="italic opacity-80">金額均以新台幣 (NT$) 計價・All prices in NT$</span>
+            </p>
+            <p id="footerCopyright" class="text-[11px] text-amber-200/50 pt-2 border-t border-vintage-borderGold/30 max-w-xs mx-auto">© 2026 Seaside Café. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- ===== Floating cart bar (appears once something is in the basket) ===== -->
+    <div id="cartBar" class="fixed bottom-0 inset-x-0 z-40 px-3 pt-3 safe-bottom pointer-events-none translate-y-[140%] transition-transform duration-300">
+        <button type="button" data-act="open-cart" class="pointer-events-auto max-w-xl mx-auto w-full flex items-center gap-3 vintage-btn rounded-2xl px-4 py-3 shadow-2xl">
+            <span id="cartBarIcon" class="relative w-10 h-10 rounded-full bg-vintage-woodDark/30 flex items-center justify-center">
+                <i class="fa-solid fa-basket-shopping"></i>
+                <span id="cartBarCount" class="absolute -top-1 -right-1 bg-vintage-stampRed text-amber-50 text-[11px] font-black min-w-[20px] h-5 px-1 rounded-full flex items-center justify-center border border-amber-100">0</span>
+            </span>
+            <span class="flex-1 text-left leading-tight">
+                <span class="block text-[11px] opacity-90">購物籃 Cart</span>
+                <span id="cartBarTotal" class="block font-black text-lg vintage-title">NT$ 0</span>
+            </span>
+            <span class="font-bold text-sm whitespace-nowrap">查看・結帳 <i class="fa-solid fa-arrow-right ml-1"></i></span>
+        </button>
+    </div>
+
+    <!-- ===== Cart drawer ===== -->
+    <div id="cartOverlay" data-act="close-cart" class="fixed inset-0 z-50 bg-black/60 hidden"></div>
+    <aside id="cartDrawer" aria-label="購物籃" class="fixed top-0 right-0 z-50 h-full w-full sm:w-[420px] bg-vintage-cardBg shadow-2xl translate-x-full transition-transform duration-300 flex flex-col border-l-4 border-vintage-borderGold">
+        <div class="bg-vintage-woodDark text-amber-100 px-4 h-14 flex justify-between items-center border-b-2 border-vintage-borderGold">
+            <h3 class="vintage-title font-bold text-lg text-amber-200"><i class="fa-solid fa-basket-shopping text-vintage-mangoGold mr-2"></i>購物籃 <span class="text-xs font-sans font-normal opacity-70">Cart</span></h3>
+            <button type="button" data-act="close-cart" class="w-10 h-10 text-amber-200 hover:text-white" aria-label="關閉"><i class="fa-solid fa-xmark text-xl"></i></button>
+        </div>
+        <div id="cartItemsList" class="flex-grow p-4 overflow-y-auto space-y-3"></div>
+        <div class="p-4 safe-bottom bg-vintage-paper border-t-2 border-vintage-borderGold/60 space-y-3">
+            <div class="flex justify-between items-baseline font-bold">
+                <span>合計 <span class="text-xs font-normal text-stone-500">Total</span></span>
+                <span id="cartDrawerTotal" class="text-vintage-terracotta text-2xl vintage-title">NT$ 0</span>
+            </div>
+            <button type="button" data-act="open-checkout" id="checkoutBtn" class="w-full py-3.5 vintage-btn font-bold rounded-xl text-base">填寫資料・送出訂單</button>
+            <button type="button" data-act="close-cart" class="w-full py-2 text-sm font-bold text-vintage-woodLight hover:underline">← 繼續點餐</button>
+        </div>
+    </aside>
+
+    <!-- ===== Customize sheet (bottom sheet on phones) ===== -->
+    <div id="customModal" class="modal fixed inset-0 z-50 hidden bg-black/70 flex items-end sm:items-center justify-center sm:p-4">
+        <div id="customBody" role="dialog" aria-modal="true" class="sheet-panel bg-vintage-cardBg w-full sm:max-w-lg rounded-t-2xl sm:rounded-xl overflow-hidden flex flex-col border-2 border-vintage-borderGold shadow-2xl"></div>
+    </div>
+
+    <!-- ===== Checkout ===== -->
+    <div id="checkoutModal" class="modal fixed inset-0 z-50 hidden bg-black/70 flex items-end sm:items-center justify-center sm:p-4">
+        <div role="dialog" aria-modal="true" class="sheet-panel bg-vintage-cardBg w-full sm:max-w-lg rounded-t-2xl sm:rounded-xl overflow-hidden flex flex-col border-2 border-vintage-borderGold shadow-2xl">
+            <div class="bg-vintage-woodDark text-amber-100 px-5 py-3.5 border-b-2 border-vintage-borderGold flex justify-between items-center">
+                <div>
+                    <h3 class="vintage-title font-bold text-lg text-amber-200">確認訂單</h3>
+                    <p class="text-amber-200/70 text-xs">Confirm Order</p>
+                </div>
+                <button type="button" data-act="close-modal" data-modal="checkoutModal" class="w-10 h-10 text-amber-200 hover:text-white" aria-label="關閉"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <form id="orderForm" class="p-5 overflow-y-auto space-y-4">
+                <fieldset>
+                    <legend class="text-xs font-bold text-vintage-woodDark mb-2">用餐方式 <span class="font-normal text-stone-500">Order Type</span></legend>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="orderType" value="DINE_IN" class="peer sr-only" checked>
+                            <span class="block p-3 rounded-xl border-2 border-stone-300 bg-white peer-checked:border-vintage-mangoGold peer-checked:bg-amber-100/70 peer-focus-visible:ring-2 peer-focus-visible:ring-vintage-mangoGold">
+                                <span class="block font-bold"><i class="fa-solid fa-chair mr-1.5 text-vintage-terracotta"></i>內用</span>
+                                <span class="block text-xs text-stone-500">Dine In</span>
+                            </span>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="orderType" value="TAKEAWAY" class="peer sr-only">
+                            <span class="block p-3 rounded-xl border-2 border-stone-300 bg-white peer-checked:border-vintage-mangoGold peer-checked:bg-amber-100/70 peer-focus-visible:ring-2 peer-focus-visible:ring-vintage-mangoGold">
+                                <span class="block font-bold"><i class="fa-solid fa-bag-shopping mr-1.5 text-vintage-terracotta"></i>外帶自取</span>
+                                <span class="block text-xs text-stone-500">Take Away</span>
+                            </span>
+                        </label>
+                    </div>
+                </fieldset>
+
+                <div id="tableField">
+                    <label for="custTable" class="block text-xs font-bold mb-1">桌號 * <span class="font-normal text-stone-500">Table No.</span></label>
+                    <input id="custTable" maxlength="10" autocomplete="off" placeholder="例如：A02" class="w-full px-3.5 py-2.5 border border-stone-300 rounded-lg bg-white uppercase focus:ring-2 focus:ring-vintage-mangoGold outline-none">
+                </div>
+                <div id="pickupField" class="hidden">
+                    <label for="pickupTime" class="block text-xs font-bold mb-1">取餐時間 <span class="font-normal text-stone-500">Pickup Time</span></label>
+                    <select id="pickupTime" class="w-full px-3.5 py-2.5 border border-stone-300 rounded-lg bg-white focus:ring-2 focus:ring-vintage-mangoGold outline-none"></select>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label for="custName" class="block text-xs font-bold mb-1">稱呼 * <span class="font-normal text-stone-500">Name</span></label>
+                        <input id="custName" required maxlength="20" autocomplete="name" placeholder="王小姐" class="w-full px-3.5 py-2.5 border border-stone-300 rounded-lg bg-white focus:ring-2 focus:ring-vintage-mangoGold outline-none">
+                    </div>
+                    <div>
+                        <label for="custPhone" class="block text-xs font-bold mb-1">電話 <span id="phoneReq">（選填）</span></label>
+                        <input id="custPhone" type="tel" inputmode="tel" maxlength="20" autocomplete="tel" pattern="[0-9+\-\s()]{8,20}" placeholder="0912-345-678" class="w-full px-3.5 py-2.5 border border-stone-300 rounded-lg bg-white focus:ring-2 focus:ring-vintage-mangoGold outline-none">
+                    </div>
+                </div>
+                <fieldset>
+                    <legend class="text-xs font-bold mb-2">付款方式 <span class="font-normal text-stone-500">（取餐時於櫃檯付款 / Pay at counter）</span></legend>
+                    <div class="grid grid-cols-3 gap-2" id="paymentOptions"></div>
+                </fieldset>
+                <label class="flex items-center gap-2 text-sm text-stone-600 cursor-pointer">
+                    <input type="checkbox" id="rememberMe" checked class="w-4 h-4 accent-[#DA8A26]"> 記住我的稱呼與電話（只存在這支手機）
+                </label>
+                <div class="rounded-xl border border-vintage-borderGold/60 bg-amber-50/60 p-3">
+                    <p class="text-xs font-bold mb-2">訂單明細</p>
+                    <div id="checkoutSummary" class="text-sm space-y-1"></div>
+                </div>
+                <button type="submit" class="w-full py-3.5 vintage-btn font-bold rounded-xl text-base">送出訂單・<span id="checkoutTotal">NT$ 0</span></button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== Order receipt ===== -->
+    <div id="successModal" class="modal fixed inset-0 z-50 hidden bg-black/70 flex items-end sm:items-center justify-center sm:p-4">
+        <div id="successBody" role="dialog" aria-modal="true" class="sheet-panel bg-vintage-cardBg w-full sm:max-w-md rounded-t-2xl sm:rounded-xl overflow-y-auto border-2 border-vintage-borderGold shadow-2xl p-6"></div>
+    </div>
+
+    <!-- ===== Admin: password ===== -->
+    <div id="pwdModal" class="modal fixed inset-0 z-50 hidden bg-black/70 flex items-center justify-center p-4">
+        <div role="dialog" aria-modal="true" class="bg-vintage-cardBg w-full max-w-sm rounded-xl shadow-2xl p-6 border-2 border-vintage-borderGold text-center">
+            <div class="w-12 h-12 bg-vintage-paper rounded-full flex items-center justify-center mx-auto mb-3 text-xl border border-vintage-borderGold"><i class="fa-solid fa-lock"></i></div>
+            <h3 class="vintage-title font-bold text-xl mb-1">管理員身份驗證</h3>
+            <p class="text-xs text-stone-600 mb-4">請輸入密碼開啟後台編輯功能</p>
+            <input type="password" id="adminPwdInput" placeholder="請輸入密碼" autocomplete="off" class="w-full px-4 py-2.5 text-center border-2 border-stone-300 rounded-lg focus:ring-2 focus:ring-vintage-mangoGold outline-none mb-4 bg-white">
+            <div class="flex gap-2">
+                <button type="button" data-act="close-modal" data-modal="pwdModal" class="w-1/2 py-2.5 vintage-btn-secondary font-bold rounded-lg text-sm">取消</button>
+                <button type="button" data-act="verify-admin" class="w-1/2 py-2.5 bg-vintage-woodDark hover:bg-stone-800 text-amber-200 font-bold rounded-lg text-sm">驗證登入</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Admin: site texts ===== -->
+    <div id="siteSettingsModal" class="modal fixed inset-0 z-50 hidden bg-black/70 flex items-center justify-center p-3 sm:p-4">
+        <div role="dialog" aria-modal="true" class="bg-vintage-cardBg w-full max-w-2xl rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border-2 border-vintage-borderGold">
+            <div class="bg-vintage-woodDark text-amber-100 p-4 border-b-2 border-vintage-borderGold flex justify-between items-center">
+                <h3 class="vintage-title font-bold text-lg text-amber-200"><i class="fa-solid fa-sliders text-vintage-mangoGold mr-2"></i>編輯全站文字</h3>
+                <button type="button" data-act="close-modal" data-modal="siteSettingsModal" class="w-10 h-10 text-amber-200 hover:text-white" aria-label="關閉"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <form id="siteSettingsForm" class="p-5 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-3 text-sm"></form>
+            <div class="p-4 border-t border-vintage-borderGold/40 flex gap-3">
+                <button type="button" data-act="close-modal" data-modal="siteSettingsModal" class="w-1/2 py-2.5 vintage-btn-secondary font-bold rounded-lg">取消</button>
+                <button type="submit" form="siteSettingsForm" class="w-1/2 py-2.5 bg-vintage-palmGreen hover:bg-emerald-800 text-white font-bold rounded-lg">儲存全站文字</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Admin: edit item ===== -->
+    <div id="editItemModal" class="modal fixed inset-0 z-50 hidden bg-black/70 flex items-center justify-center p-3 sm:p-4">
+        <div role="dialog" aria-modal="true" class="bg-vintage-cardBg w-full max-w-md rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border-2 border-vintage-borderGold">
+            <div class="bg-vintage-woodDark text-amber-100 p-4 border-b-2 border-vintage-borderGold flex justify-between items-center">
+                <h3 id="editModalHeaderTitle" class="vintage-title font-bold text-lg text-amber-200">新增品項</h3>
+                <button type="button" data-act="close-modal" data-modal="editItemModal" class="w-10 h-10 text-amber-200 hover:text-white" aria-label="關閉"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <form id="editItemForm" class="p-5 overflow-y-auto space-y-3 text-sm">
+                <input type="hidden" id="editItemId">
+                <label class="block"><span class="block text-xs font-bold mb-1">中文品項名稱 *</span>
+                    <input id="editTitle" required maxlength="30" placeholder="如：香烤海鮮拼盤" class="w-full px-3.5 py-2 border border-stone-300 rounded-lg bg-white focus:ring-2 focus:ring-vintage-mangoGold outline-none"></label>
+                <label class="block"><span class="block text-xs font-bold mb-1">英文譯名</span>
+                    <input id="editSubtitle" maxlength="60" placeholder="Grilled seafood platter" class="w-full px-3.5 py-2 border border-stone-300 rounded-lg bg-white focus:ring-2 focus:ring-vintage-mangoGold outline-none"></label>
+                <div class="grid grid-cols-2 gap-3">
+                    <label class="block"><span class="block text-xs font-bold mb-1">價格 (NT$) *</span>
+                        <input id="editPrice" type="number" min="0" step="1" required class="w-full px-3.5 py-2 border border-stone-300 rounded-lg bg-white focus:ring-2 focus:ring-vintage-mangoGold outline-none"></label>
+                    <label class="block"><span class="block text-xs font-bold mb-1">分類 *</span>
+                        <select id="editCategory" class="w-full px-3 py-2 border border-stone-300 rounded-lg bg-white focus:ring-2 focus:ring-vintage-mangoGold outline-none"></select></label>
+                </div>
+                <div>
+                    <span class="block text-xs font-bold mb-1">圖片（網址或上傳）</span>
+                    <input id="editImgUrl" placeholder="https://..." class="w-full px-3.5 py-2 border border-stone-300 rounded-lg bg-white focus:ring-2 focus:ring-vintage-mangoGold outline-none mb-2">
+                    <label class="inline-flex items-center gap-1.5 cursor-pointer bg-stone-200 hover:bg-stone-300 px-3 py-1.5 rounded text-xs font-bold border border-stone-400">
+                        <i class="fa-solid fa-upload"></i>上傳圖片（自動壓縮）
+                        <input type="file" id="editImgFile" accept="image/*" class="hidden">
+                    </label>
+                    <div id="editImgPreview" class="mt-2 h-28 w-full bg-stone-100 rounded-lg overflow-hidden border border-stone-300 flex items-center justify-center text-xs text-stone-400">尚未設置圖片</div>
+                </div>
+                <label class="block"><span class="block text-xs font-bold mb-1">食材說明（選填）</span>
+                    <input id="editDesc" maxlength="60" placeholder="鮮蝦・干貝・魚排・蔬菜" class="w-full px-3.5 py-2 border border-stone-300 rounded-lg bg-white focus:ring-2 focus:ring-vintage-mangoGold outline-none"></label>
+                <label class="block"><span class="block text-xs font-bold mb-1">標籤（逗號分隔）</span>
+                    <input id="editTags" maxlength="60" placeholder="人氣推薦, 素食" class="w-full px-3.5 py-2 border border-stone-300 rounded-lg bg-white focus:ring-2 focus:ring-vintage-mangoGold outline-none"></label>
+            </form>
+            <div class="p-4 border-t border-vintage-borderGold/40 flex gap-3">
+                <button type="button" data-act="close-modal" data-modal="editItemModal" class="w-1/2 py-2.5 vintage-btn-secondary font-bold rounded-lg">取消</button>
+                <button type="submit" form="editItemForm" class="w-1/2 py-2.5 bg-vintage-palmGreen hover:bg-emerald-800 text-white font-bold rounded-lg">儲存變更</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Admin: edit category ===== -->
+    <div id="catEditModal" class="modal fixed inset-0 z-50 hidden bg-black/70 flex items-center justify-center p-3 sm:p-4">
+        <div role="dialog" aria-modal="true" class="bg-vintage-cardBg w-full max-w-md rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border-2 border-vintage-borderGold">
+            <div class="bg-vintage-woodDark text-amber-100 p-4 border-b-2 border-vintage-borderGold flex justify-between items-center">
+                <h3 class="vintage-title font-bold text-lg text-amber-200"><i class="fa-solid fa-list text-vintage-mangoGold mr-2"></i><span id="catEditTitle">編輯分類 Edit Category</span></h3>
+                <button type="button" data-act="close-modal" data-modal="catEditModal" class="w-10 h-10 text-amber-200 hover:text-white" aria-label="關閉"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <form id="catEditForm" class="p-5 overflow-y-auto space-y-3 text-sm">
+                <input type="hidden" id="catEditKey">
+                <label class="block"><span class="block text-xs font-bold mb-1">中文名稱 *</span>
+                    <input id="catEditZh" required maxlength="12" placeholder="主餐" class="w-full px-3.5 py-2 border border-stone-300 rounded-lg bg-white focus:ring-2 focus:ring-vintage-mangoGold outline-none"></label>
+                <label class="block"><span class="block text-xs font-bold mb-1">英文名稱 English</span>
+                    <input id="catEditEn" maxlength="30" placeholder="Main Course" class="w-full px-3.5 py-2 border border-stone-300 rounded-lg bg-white focus:ring-2 focus:ring-vintage-mangoGold outline-none"></label>
+                <fieldset>
+                    <legend class="block text-xs font-bold mb-1">圖示 Icon</legend>
+                    <div id="catEditIcons" class="flex flex-wrap gap-1.5"></div>
+                </fieldset>
+                <label id="catEditDrinkRow" class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" id="catEditDrink" class="w-4 h-4 accent-[#1C78B5]">
+                    <span class="text-xs font-bold">飲品分類（點餐時可選冰量 / 甜度 / 加料）</span>
+                </label>
+                <div class="flex items-center justify-between gap-2">
+                    <button type="button" id="catResetBtn" data-act="reset-cat" class="text-xs font-bold text-vintage-woodLight underline"><i class="fa-solid fa-rotate-left mr-1"></i>恢復預設</button>
+                    <button type="button" id="catDeleteBtn" data-act="delete-cat" class="text-xs font-bold text-red-700 underline"><i class="fa-solid fa-trash-can mr-1"></i>刪除此分類</button>
+                </div>
+            </form>
+            <div class="p-4 border-t border-vintage-borderGold/40 flex gap-3">
+                <button type="button" data-act="close-modal" data-modal="catEditModal" class="w-1/2 py-2.5 vintage-btn-secondary font-bold rounded-lg">取消</button>
+                <button type="submit" form="catEditForm" class="w-1/2 py-2.5 bg-vintage-palmGreen hover:bg-emerald-800 text-white font-bold rounded-lg">儲存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Dialog ===== -->
+    <div id="dialogModal" class="modal fixed inset-0 z-[60] hidden bg-black/70 flex items-center justify-center p-4">
+        <div role="alertdialog" aria-modal="true" class="bg-vintage-cardBg w-full max-w-sm rounded-xl shadow-2xl p-6 border-2 border-vintage-borderGold text-center">
+            <div id="dialogIcon" class="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl border"></div>
+            <h3 id="dialogTitle" class="vintage-title font-bold text-xl mb-2"></h3>
+            <p id="dialogMessage" class="text-sm text-stone-600 mb-6 whitespace-pre-line"></p>
+            <div class="flex gap-3">
+                <button type="button" id="dialogCancel" data-act="close-modal" data-modal="dialogModal" class="flex-1 py-2.5 vintage-btn-secondary font-bold rounded-lg text-sm">取消</button>
+                <button type="button" id="dialogOk" data-act="dialog-ok" class="flex-1 py-2.5 bg-vintage-woodDark hover:bg-stone-800 text-amber-200 font-bold rounded-lg text-sm">確定</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastBox" aria-live="polite" class="fixed left-1/2 -translate-x-1/2 z-[70] flex flex-col items-center gap-2 pointer-events-none" style="top: calc(var(--header-h) + 64px)"></div>
+
+<script>
+// =====================================================================
+//  店家設定 SHOP CONFIG — 上線前請修改這裡
+// =====================================================================
+const SITE = window.SITE;
+const SHOP_INFO = SITE.shop || {};
+const SHOP = {
+    lineId: SHOP_INFO.lineId || "",
+    payments: (SITE.payments && SITE.payments.length) ? SITE.payments : ["現金 Cash"]
+};
+// 每個網站 / 每份菜單用不同的購物籃，換菜單後舊購物籃不會殘留
+const SITE_HASH = (() => { let h = 0; const t = JSON.stringify([SHOP_INFO.name, SITE.menu]); for (let i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) | 0; return (h >>> 0).toString(36); })();
+const STORAGE = {
+    cart: "menu_cart_" + SITE_HASH,
+    customer: "menu_customer_v1",
+    lastOrder: "menu_last_order_" + SITE_HASH
+};
+const ADMIN_IDLE_MS = 10 * 60 * 1000;
+const MAX_QTY = 20;
+const CATS = (SITE.categories || []).filter((c) => c && c.key && c.name);
+const CATEGORY_KEYS = [];
+const CATEGORY_ICONS = {};
+const DRINK_CATEGORIES = [];
+const CATEGORY_TEXT_KEY = { all: "catAll" };
+const ICON_CHOICES = [["fa-star", "推薦"]];
+
+// =====================================================================
+//  菜單資料（來自 site-config）
+// =====================================================================
+const DEFAULT_MENU = (SITE.menu || []).filter((i) => i && i.title).map((i, n) => ({
+    id: Number.isFinite(i.id) ? i.id : n + 1, title: String(i.title), subtitle: i.subtitle || "", desc: i.desc || "",
+    price: Number(i.price) || 0, category: String(i.category || (CATS[0] && CATS[0].key) || "other"),
+    tags: Array.isArray(i.tags) ? i.tags : [], imgUrl: i.imgUrl || ""
+}));
+const DRINK = SITE.drinkOptions || {};
+const TOPPINGS_DATA = DRINK.toppings || [];
+const ICE_LEVELS = (DRINK.ice && DRINK.ice.length) ? DRINK.ice : ["正常冰", "少冰", "去冰"];
+const SUGAR_LEVELS = (DRINK.sugar && DRINK.sugar.length) ? DRINK.sugar : ["正常甜", "半糖", "無糖"];
+const ICE_BY_CATEGORY = Object.fromEntries(CATS.filter((c) => Array.isArray(c.ice) && c.ice.length).map((c) => [c.key, c.ice]));
+
+const DEFAULT_SITE_TEXTS = {
+    brandTitle: SHOP_INFO.name || "",
+    brandBadge: SHOP_INFO.badge || "",
+    brandSubtitle: SHOP_INFO.subtitle || "",
+    cartBtnText: SHOP_INFO.cartText || "購物籃",
+    heroTagline: SHOP_INFO.heroTagline || "",
+    heroTitle: SHOP_INFO.heroTitle || SHOP_INFO.name || "",
+    heroDescZh: SHOP_INFO.heroText1 || "",
+    heroDescVi: SHOP_INFO.heroText2 || "",
+    catAll: SHOP_INFO.allLabel || "全部 All",
+    customCats: CATS.map((c) => ({ key: c.key, label: c.name, drink: !!c.drink })),
+    catIcons: Object.assign({ all: SHOP_INFO.allIcon || "fa-star" }, Object.fromEntries(CATS.map((c) => [c.key, c.icon || "fa-utensils"]))),
+    footerZh: SHOP_INFO.footerText1 || "",
+    footerVi: SHOP_INFO.footerText2 || "",
+    copyright: SHOP_INFO.copyright || ""
+};
+const SETTINGS_FIELDS = [];
+
+// =====================================================================
+//  狀態
+// =====================================================================
+let menuData = [];
+let siteTexts = { ...DEFAULT_SITE_TEXTS };
+let cart = [];
+let activeCategory = "all";
+let searchQuery = "";
+let isAdminMode = false;
+let custom = null;          // 目前客製化中的飲品 { item, ice, sugar, toppings:Set, qty, note, editKey }
+let dialogCb = null;
+let adminTimer = null;
+let pendingImage = null;    // 上傳後壓縮的圖片
+const tableFromUrl = (new URLSearchParams(location.search).get("table") || "").trim().toUpperCase().slice(0, 10);
+
+const FALLBACK_IMG = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
+    "<svg xmlns='http://www.w3.org/2000/svg' width='600' height='400' viewBox='0 0 600 400'><rect width='100%' height='100%' fill='#EFE4D6'/><g fill='none' stroke='#C5A059' stroke-width='6'><path d='M250 140h100l-12 150h-76z'/><path d='M300 140l20-50'/></g><text x='50%' y='345' font-family='serif' font-size='22' fill='#9a7b45' text-anchor='middle'>圖片準備中</text></svg>"
+);
+
+// =====================================================================
+//  工具
+// =====================================================================
+const $ = (id) => document.getElementById(id);
+const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const formatNT = (n) => `NT$ ${Number(n).toLocaleString("zh-TW")}`;
+const pad2 = (n) => String(n).padStart(2, "0");
+function isSafeImg(url) {
+    if (typeof url !== "string" || !url) return false;
+    if (/^data:image\/(png|jpe?g|webp|gif);base64,[a-z0-9+/=]+$/i.test(url)) return true;
+    try { return /^https?:$/.test(new URL(url).protocol); } catch { return false; }
+}
+const imgSrc = (url) => (isSafeImg(url) ? url : FALLBACK_IMG);
+function storageGet(k) { try { return localStorage.getItem(k); } catch { return null; } }
+function storageSet(k, v) { localStorage.setItem(k, v); }          // 可能拋出 QuotaExceededError，由呼叫端處理
+function storageTrySet(k, v) { try { storageSet(k, v); return true; } catch { return false; } }
+function loadJSON(k, fallback) { try { const r = storageGet(k); return r ? JSON.parse(r) : fallback; } catch { return fallback; } }
+
+const findCustomCat = (key) => (siteTexts.customCats || []).find((c) => c.key === key);
+const allCategoryKeys = () => [...CATEGORY_KEYS, ...(siteTexts.customCats || []).map((c) => c.key)];
+function getCategoryName(key) {
+    return { main: siteTexts.catMain, cold: siteTexts.catCold, hot: siteTexts.catHot, dessert: siteTexts.catDessert }[key] || findCustomCat(key)?.label || "其他";
+}
+const categoryIcon = (key) => siteTexts.catIcons?.[key] || CATEGORY_ICONS[key] || "fa-utensils";
+// 「主餐 Main Course」→ ["主餐", "Main Course"]
+function splitLabel(label) {
+    const m = String(label).match(/^(\S+)\s+(.+)$/);
+    return m ? [m[1], m[2]] : [String(label), ""];
+}
+const iceOptionsFor = (item) => ICE_BY_CATEGORY[item.category] || ICE_LEVELS;
+const isDrink = (item) => DRINK_CATEGORIES.includes(item.category) || !!findCustomCat(item.category)?.drink;
+const findItem = (id) => menuData.find((i) => i.id === id);
+const toppingPrice = (names) => names.reduce((s, n) => s + (TOPPINGS_DATA.find((t) => t.name === n)?.price || 0), 0);
+const cartTotal = () => cart.reduce((s, l) => s + l.unitPrice * l.qty, 0);
+const cartCount = () => cart.reduce((s, l) => s + l.qty, 0);
+
+// =====================================================================
+//  載入 / 儲存
+// =====================================================================
+function isValidItem(i) {
+    return i && Number.isFinite(i.id) && typeof i.title === "string" && Number.isFinite(i.price) && typeof i.category === "string";
+}
+function loadMenu() { menuData = DEFAULT_MENU.map((i) => ({ ...i, tags: [...i.tags] })); }
+function saveMenu() { return true; }
+function loadTexts() { siteTexts = { ...DEFAULT_SITE_TEXTS, catIcons: { ...DEFAULT_SITE_TEXTS.catIcons }, customCats: DEFAULT_SITE_TEXTS.customCats.map((c) => ({ ...c })) }; }
+function loadCart() {
+    const saved = loadJSON(STORAGE.cart, []);
+    cart = Array.isArray(saved) ? saved.filter((l) => l && Number.isFinite(l.unitPrice) && Number.isFinite(l.qty) && l.qty > 0 && Array.isArray(l.toppings)) : [];
+}
+const saveCart = () => storageTrySet(STORAGE.cart, JSON.stringify(cart));
+
+function applySiteTexts() {
+    const map = {
+        siteBrandTitle: "brandTitle", siteBrandBadge: "brandBadge", siteBrandSubtitle: "brandSubtitle", siteCartBtnText: "cartBtnText",
+        heroTagline: "heroTagline", heroTitle: "heroTitle", heroDescriptionZh: "heroDescZh", heroDescriptionVi: "heroDescVi",
+        footerTextZh: "footerZh", footerTextVi: "footerVi", footerCopyright: "copyright"
+    };
+    Object.entries(map).forEach(([id, key]) => { $(id).textContent = siteTexts[key]; $(id).classList.toggle("hidden-empty", !siteTexts[key]); });
+    $("footerBrandName").textContent = siteTexts.brandTitle;
+    document.title = SHOP_INFO.pageTitle || `${siteTexts.brandTitle} - 線上點餐`;
+    const icon = SHOP_INFO.icon || "fa-sun";
+    ["brandIcon", "footerIcon"].forEach((id) => { if ($(id)) $(id).className = `fa-solid ${icon}` + (id === "brandIcon" ? " md:text-xl" : ""); });
+}
+
+// =====================================================================
+//  菜單
+// =====================================================================
+function renderCategoryTabs() {
+    const keys = ["all", ...allCategoryKeys()];
+    const count = (k) => (k === "all" ? menuData.length : menuData.filter((i) => i.category === k).length);
+    $("catTabs").innerHTML = keys.map((key) => {
+        const on = key === activeCategory;
+        const [zh, en] = splitLabel(key === "all" ? siteTexts.catAll : getCategoryName(key));
+        const edit = isAdminMode ? `<button type="button" data-act="edit-cat" data-cat="${key}" aria-label="編輯分類"
+            class="absolute top-1 right-1 w-7 h-7 rounded-full bg-amber-400 text-vintage-woodDark text-[11px] shadow hover:bg-amber-300 z-10"><i class="fa-solid fa-pen"></i></button>` : "";
+        return `<div class="relative">
+            <button type="button" data-act="cat" data-cat="${key}" aria-pressed="${on}"
+                class="w-full flex flex-col md:flex-row items-center md:items-center gap-1 md:gap-3 px-1 md:px-3 py-3 md:py-2.5 text-center md:text-left transition border-l-4 md:border-l-0 md:rounded-xl
+                ${on ? "border-vintage-mangoGold bg-vintage-mangoGold/15 md:bg-vintage-terracotta md:text-white text-vintage-woodDark shadow-sm" : "border-transparent text-vintage-woodDark hover:bg-vintage-borderGold/20"}">
+                <span class="w-9 h-9 md:w-10 md:h-10 shrink-0 rounded-full flex items-center justify-center ${on ? "bg-vintage-mangoGold text-white" : "bg-vintage-borderGold/30 text-vintage-terracotta"}">
+                    <i class="fa-solid ${categoryIcon(key)}"></i></span>
+                <span class="min-w-0 flex-1 leading-tight">
+                    <span class="block vintage-title font-bold text-[13px] md:text-base break-words">${esc(zh)}</span>
+                    ${en ? `<span class="block text-[10px] md:text-xs italic opacity-90 break-words">${esc(en)}</span>` : ""}
+                </span>
+                <span class="hidden lg:inline text-xs font-bold opacity-70">${count(key)}</span>
+            </button>${edit}
+        </div>`;
+    }).join("") + (isAdminMode ? `<button type="button" data-act="add-cat"
+        class="mx-1 md:mx-0 mt-2 py-2.5 rounded-xl border-2 border-dashed border-vintage-palmGreen text-vintage-palmGreen font-bold text-xs md:text-sm hover:bg-emerald-50">
+        <i class="fa-solid fa-plus md:mr-1"></i><span class="block md:inline">新增分類</span></button>` : "");
+}
+
+// ---------- 新增 / 編輯 / 刪除分類 ----------
+// key = "" 代表新增分類
+function openEditCategory(key) {
+    const builtIn = key === "all" || CATEGORY_KEYS.includes(key);
+    const custom = findCustomCat(key);
+    if (key && !builtIn && !custom) return;
+    const [zh, en] = key ? splitLabel(builtIn ? siteTexts[CATEGORY_TEXT_KEY[key]] : custom.label) : ["", ""];
+    $("catEditKey").value = key;
+    $("catEditTitle").textContent = key ? "編輯分類 Edit Category" : "新增分類 New Category";
+    $("catEditZh").value = zh;
+    $("catEditEn").value = en;
+    $("catEditDrink").checked = !!custom?.drink;
+    $("catEditDrinkRow").classList.toggle("hidden", builtIn);
+    $("catResetBtn").classList.toggle("hidden", !builtIn);
+    $("catDeleteBtn").classList.toggle("hidden", !custom);
+    const cur = key ? categoryIcon(key) : "fa-star";
+    $("catEditIcons").innerHTML = ICON_CHOICES.map(([icon, name]) => `<label class="cursor-pointer" title="${esc(name)}">
+        <input type="radio" name="catIcon" value="${icon}" class="peer sr-only" ${icon === cur ? "checked" : ""}>
+        <span class="flex w-10 h-10 items-center justify-center rounded-lg border-2 border-stone-300 bg-white text-vintage-terracotta peer-checked:border-vintage-mangoGold peer-checked:bg-amber-100 peer-focus-visible:ring-2 peer-focus-visible:ring-vintage-woodDark"><i class="fa-solid ${icon}"></i></span>
+    </label>`).join("");
+    openModal("catEditModal");
+    setTimeout(() => $("catEditZh").focus(), 50);
+}
+function persistTexts() {
+    if (!storageTrySet(STORAGE.texts, JSON.stringify(siteTexts))) showDialog("error", "儲存失敗", "瀏覽器空間不足。");
+    renderCategoryTabs();
+    renderMenu();
+}
+function saveCategory(e) {
+    e.preventDefault();
+    let key = $("catEditKey").value;
+    const zh = $("catEditZh").value.trim().replace(/\s+/g, "");
+    const en = $("catEditEn").value.trim();
+    if (!zh) return showDialog("error", "資料不完整", "請輸入中文名稱。");
+    const label = en ? `${zh} ${en}` : zh;
+    const icon = document.querySelector('input[name="catIcon"]:checked')?.value || "fa-star";
+    const drink = $("catEditDrink").checked;
+    if (!key) {                                            // 新增
+        key = "c" + Date.now().toString(36);
+        siteTexts.customCats = [...(siteTexts.customCats || []), { key, label, drink }];
+    } else if (CATEGORY_TEXT_KEY[key]) {                   // 內建分類
+        siteTexts[CATEGORY_TEXT_KEY[key]] = label;
+    } else {                                               // 自訂分類
+        siteTexts.customCats = siteTexts.customCats.map((c) => (c.key === key ? { ...c, label, drink } : c));
+    }
+    siteTexts.catIcons = { ...siteTexts.catIcons, [key]: icon };
+    const isNew = !$("catEditKey").value;
+    closeModal("catEditModal");
+    if (isNew) activeCategory = key;
+    persistTexts();
+    showToast(isNew ? `已新增分類「${zh}」` : `已更新分類「${zh}」`);
+}
+function resetCategory() {
+    const key = $("catEditKey").value;
+    const textKey = CATEGORY_TEXT_KEY[key];
+    if (!textKey) return;
+    siteTexts[textKey] = DEFAULT_SITE_TEXTS[textKey];
+    siteTexts.catIcons = { ...siteTexts.catIcons, [key]: DEFAULT_SITE_TEXTS.catIcons[key] };
+    closeModal("catEditModal");
+    persistTexts();
+}
+function deleteCategory() {
+    const key = $("catEditKey").value;
+    const cat = findCustomCat(key);
+    if (!cat) return;
+    const n = menuData.filter((i) => i.category === key).length;
+    if (n) return showDialog("error", "無法刪除", `「${splitLabel(cat.label)[0]}」裡還有 ${n} 個品項。\n請先把品項移到其他分類或刪除。`);
+    showDialog("confirm", "刪除分類", `確定要刪除分類「${splitLabel(cat.label)[0]}」嗎？`, () => {
+        siteTexts.customCats = siteTexts.customCats.filter((c) => c.key !== key);
+        const { [key]: _, ...rest } = siteTexts.catIcons;
+        siteTexts.catIcons = rest;
+        if (activeCategory === key) activeCategory = "all";
+        closeModal("catEditModal");
+        persistTexts();
+    });
+}
+
+function matches(item) {
+    if (!searchQuery) return true;
+    return [item.title, item.subtitle, item.desc, ...(item.tags || [])].some((s) => String(s || "").toLowerCase().includes(searchQuery));
+}
+
+function renderMenu() {
+    const qtyById = cart.reduce((m, l) => m.set(l.id, (m.get(l.id) || 0) + l.qty), new Map());
+    const keys = activeCategory === "all" || searchQuery ? [...allCategoryKeys(), ...new Set(menuData.map((i) => i.category).filter((c) => !allCategoryKeys().includes(c)))] : [activeCategory];
+    const sections = keys.map((key) => {
+        const items = menuData.filter((i) => i.category === key && (searchQuery || activeCategory === "all" || i.category === activeCategory) && matches(i));
+        return items.length ? { key, items } : null;
+    }).filter(Boolean);
+
+    const total = sections.reduce((s, x) => s + x.items.length, 0);
+    $("emptyState").classList.toggle("hidden", total > 0);
+    $("searchInfo").classList.toggle("hidden", !searchQuery);
+    $("searchInfo").innerHTML = searchQuery ? `找到 <b>${total}</b> 款符合「${esc(searchQuery)}」的品項・<button type="button" data-act="clear-search" class="underline font-bold">清除搜尋</button>` : "";
+
+    $("menuSections").innerHTML = sections.map(({ key, items }) => `
+        <section id="sec-${esc(key)}" class="section-anchor">
+            <div class="flex items-center gap-3 mb-3">
+                <h2 class="vintage-title font-black text-lg sm:text-xl text-white whitespace-nowrap bg-gradient-to-r from-vintage-terracotta to-vintage-woodLight pl-3 pr-6 py-1.5 rounded-r-full rounded-l-md shadow-sm">
+                    <i class="fa-solid ${categoryIcon(key)} mr-2"></i>${esc(getCategoryName(key))}<span class="ml-2 text-xs font-sans font-bold opacity-80">${items.length}</span></h2>
+                <span class="flex-1 wave-divider"></span>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-2 md:gap-2.5">
+                ${items.map((item) => card(item, qtyById.get(item.id) || 0)).join("")}
+            </div>
+        </section>`).join("");
+}
+
+function card(item, qty) {
+    const tagIcon = (t) => (t.includes("人氣") ? '<i class="fa-solid fa-crown mr-0.5"></i>' : t.includes("素") ? '<i class="fa-solid fa-leaf mr-0.5"></i>' : "");
+    const tags = (item.tags || []).slice(0, 2).map((t) => `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full vintage-badge shadow whitespace-nowrap ${t.includes("素") ? "!bg-vintage-palmGreen" : ""}">${tagIcon(t)}${esc(t)}</span>`).join("");
+    const admin = isAdminMode ? `
+        <div class="absolute top-2 right-2 flex gap-1 z-10">
+            <button type="button" data-act="edit-item" data-id="${item.id}" aria-label="編輯" class="bg-amber-400 text-vintage-woodDark w-9 h-9 rounded-full shadow hover:bg-amber-300"><i class="fa-solid fa-pen text-xs"></i></button>
+            <button type="button" data-act="delete-item" data-id="${item.id}" aria-label="刪除" class="bg-red-700 text-white w-9 h-9 rounded-full shadow hover:bg-red-800"><i class="fa-solid fa-trash-can text-xs"></i></button>
+        </div>` : "";
+    // 菜單列：左圖、中間品名、右下價格（手機與桌機一致，像紙本菜單）
+    return `<article class="vintage-card ${qty ? "in-cart" : ""} relative rounded-xl overflow-hidden">
+        ${admin}
+        <button type="button" data-act="open-item" data-id="${item.id}" class="w-full h-full text-left flex items-center gap-2.5 sm:gap-3 p-1.5 sm:p-2" aria-label="${esc(item.title)} ${formatNT(item.price)}">
+            <span class="relative block w-[72px] h-[72px] sm:w-20 sm:h-20 aspect-square shrink-0 overflow-hidden rounded-lg bg-[#E6F2F7]">
+                <img src="${esc(imgSrc(item.imgUrl))}" alt="" loading="lazy" class="drink-img w-full h-full object-cover">
+                ${tags ? `<span class="absolute top-0.5 left-0.5 flex flex-col items-start gap-0.5 scale-90 origin-top-left">${tags}</span>` : ""}
+                ${qty ? `<span class="absolute bottom-1 left-1 bg-vintage-stampRed text-white text-[11px] font-black px-1.5 py-0.5 rounded-full border border-amber-100"><i class="fa-solid fa-check mr-0.5"></i>${qty}</span>` : ""}
+            </span>
+            <span class="flex-1 min-w-0 flex flex-col self-stretch justify-center">
+                <span class="vintage-title font-bold text-[14px] sm:text-base leading-tight truncate">${esc(item.title)}</span>
+                <span class="text-[11px] sm:text-xs text-stone-500 font-serif italic leading-tight truncate">${esc(item.subtitle)}</span>
+                ${item.desc ? `<span class="text-[11px] sm:text-xs text-vintage-woodLight mt-0.5 leading-tight truncate">${esc(item.desc)}</span>` : ""}
+                <span class="mt-1 pt-1 flex items-center justify-between gap-2 border-t border-dotted border-vintage-borderGold/70">
+                    <span class="vintage-title font-black text-vintage-terracotta whitespace-nowrap"><span class="text-xs mr-0.5">NT$</span><span class="text-lg">${Number(item.price).toLocaleString("zh-TW")}</span></span>
+                    <span class="order-pill vintage-btn h-8 w-8 sm:w-auto sm:px-3 shrink-0 rounded-full flex items-center justify-center gap-1 font-bold text-xs">
+                        <i class="fa-solid fa-plus"></i><span class="hidden sm:inline whitespace-nowrap">點餐</span></span>
+                </span>
+            </span>
+        </button>
+    </article>`;
+}
+
+function setSearch(value, source) {
+    searchQuery = value.toLowerCase().trim();
+    document.querySelectorAll("[data-search]").forEach((el) => { if (el !== source) el.value = value; });
+    renderMenu();
+}
+
+function selectCategory(cat) {
+    activeCategory = cat;
+    if (searchQuery) setSearch("", null);
+    renderCategoryTabs();
+    renderMenu();
+    // 若已往下捲，跳回菜單開頭（分類列下方），避免換分類後畫面停在空白處
+    const stickyH = $("siteHeader").offsetHeight;
+    const target = $("menuSections").getBoundingClientRect().top + scrollY - stickyH - 12;
+    if (scrollY > target) window.scrollTo({ top: target, behavior: "smooth" });
+}
+
+// =====================================================================
+//  客製化（底部彈出面板）
+// =====================================================================
+function openCustomize(itemId, editKey = null) {
+    const item = findItem(itemId);
+    if (!item) { showToast("此品項已下架"); return; }
+    const line = editKey ? cart.find((l) => l.key === editKey) : null;
+    const drink = isDrink(item);
+    const ices = iceOptionsFor(item);
+    custom = {
+        item,
+        ice: !drink ? "" : line && ices.includes(line.ice) ? line.ice : ices[0],
+        sugar: !drink ? "" : line && line.sugar ? line.sugar : SUGAR_LEVELS[0],
+        toppings: new Set(drink && line ? line.toppings : []),
+        qty: line ? line.qty : 1,
+        note: line ? line.note : "",
+        editKey: line ? editKey : null
+    };
+
+    const pill = (group, value, on) => `<label class="cursor-pointer">
+        <input type="radio" name="${group}" value="${esc(value)}" class="peer sr-only" ${on ? "checked" : ""} data-opt="${group}">
+        <span class="block text-center px-2 py-2.5 rounded-lg border-2 text-sm font-bold transition border-stone-300 bg-white hover:border-vintage-mangoGold peer-checked:border-vintage-mangoGold peer-checked:bg-vintage-mangoGold peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-vintage-woodDark">${esc(value)}</span>
+    </label>`;
+    const topping = (t) => `<label class="cursor-pointer">
+        <input type="checkbox" value="${esc(t.name)}" class="peer sr-only" ${custom.toppings.has(t.name) ? "checked" : ""} data-opt="topping">
+        <span class="flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg border-2 text-sm font-bold transition border-stone-300 bg-white hover:border-vintage-mangoGold peer-checked:border-vintage-terracotta peer-checked:bg-orange-50 peer-focus-visible:ring-2 peer-focus-visible:ring-vintage-woodDark">
+            <span><i class="opt-check fa-solid fa-check mr-1 text-vintage-terracotta"></i>${esc(t.name)}</span><span class="text-vintage-terracotta text-xs">+${t.price}</span>
+        </span>
+    </label>`;
+
+    $("customBody").innerHTML = `
+        <div class="relative h-40 sm:h-48 shrink-0 bg-vintage-woodDark">
+            <img src="${esc(imgSrc(item.imgUrl))}" alt="" class="w-full h-full object-cover opacity-85">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent"></div>
+            <button type="button" data-act="close-modal" data-modal="customModal" aria-label="關閉" class="absolute top-3 right-3 bg-black/60 text-white w-10 h-10 rounded-full hover:bg-black"><i class="fa-solid fa-xmark"></i></button>
+            <div class="absolute bottom-3 left-4 right-4 text-white">
+                <h3 class="vintage-title font-black text-2xl text-amber-200 leading-tight">${esc(item.title)}</h3>
+                <p class="text-xs text-amber-100/90 italic">${esc(item.subtitle)}・${formatNT(item.price)}</p>
+            </div>
+        </div>
+        <div class="p-4 sm:p-5 overflow-y-auto space-y-5">
+            ${item.desc ? `<p class="text-sm text-vintage-woodLight"><i class="fa-solid fa-fish mr-1.5"></i>${esc(item.desc)}</p>` : ""}
+            ${drink ? `<fieldset>
+                <legend class="text-sm font-bold mb-2"><i class="fa-solid fa-snowflake text-sky-600 mr-1.5"></i>冰量 <span class="text-xs font-normal text-stone-500">Ice</span>
+                    </legend>
+                <div class="grid grid-cols-3 sm:grid-cols-5 gap-2">${ices.map((v) => pill("ice", v, v === custom.ice)).join("")}</div>
+            </fieldset>
+            <fieldset>
+                <legend class="text-sm font-bold mb-2"><i class="fa-solid fa-cubes text-amber-600 mr-1.5"></i>甜度 <span class="text-xs font-normal text-stone-500">Sugar</span></legend>
+                <div class="grid grid-cols-3 sm:grid-cols-5 gap-2">${SUGAR_LEVELS.map((v) => pill("sugar", v, v === custom.sugar)).join("")}</div>
+            </fieldset>
+            <fieldset>
+                <legend class="text-sm font-bold mb-2"><i class="fa-solid fa-circle-plus text-vintage-terracotta mr-1.5"></i>加料 <span class="text-xs font-normal text-stone-500">Topping（可複選）</span></legend>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">${TOPPINGS_DATA.map(topping).join("")}</div>
+            </fieldset>` : ""}
+            <label class="block">
+                <span class="text-sm font-bold">備註 <span class="text-xs font-normal text-stone-500">Note</span></span>
+                <input id="customNote" maxlength="40" placeholder="例：不要香菜、醬料分開" autocomplete="off" class="mt-1.5 w-full px-3.5 py-2.5 border border-stone-300 rounded-lg bg-white focus:ring-2 focus:ring-vintage-mangoGold outline-none">
+            </label>
+        </div>
+        <div class="px-4 sm:px-5 pt-3 safe-bottom bg-vintage-paper border-t border-vintage-borderGold/40 flex items-center gap-3">
+            <div class="flex items-center gap-1 bg-white border border-stone-300 rounded-full p-1">
+                <button type="button" data-act="custom-qty" data-delta="-1" aria-label="減少" class="w-10 h-10 rounded-full hover:bg-stone-100 font-black text-lg">−</button>
+                <span id="customQty" class="w-7 text-center font-black text-lg">1</span>
+                <button type="button" data-act="custom-qty" data-delta="1" aria-label="增加" class="w-10 h-10 rounded-full hover:bg-stone-100 font-black text-lg">+</button>
+            </div>
+            <button type="button" data-act="custom-commit" class="flex-1 py-3 vintage-btn rounded-xl font-bold whitespace-nowrap">
+                ${custom.editKey ? "更新" : "加入購物籃"}・<span id="customPrice"></span>
+            </button>
+        </div>`;
+    $("customNote").value = custom.note;
+    updateCustomPrice();
+    openModal("customModal");
+}
+
+function updateCustomPrice() {
+    if (!custom) return;
+    const unit = custom.item.price + toppingPrice([...custom.toppings]);
+    $("customQty").textContent = custom.qty;
+    $("customPrice").textContent = formatNT(unit * custom.qty);
+}
+
+function commitCustom() {
+    if (!custom) return;
+    const { item, ice, sugar, qty } = custom;
+    const toppings = TOPPINGS_DATA.map((t) => t.name).filter((n) => custom.toppings.has(n));   // 固定順序，方便合併
+    const note = ($("customNote").value || "").trim().slice(0, 40);
+    const key = JSON.stringify([item.id, ice, sugar, toppings, note]);
+    const line = { key, id: item.id, title: item.title, subtitle: item.subtitle, basePrice: item.price, ice, sugar, toppings, note, qty, unitPrice: item.price + toppingPrice(toppings) };
+
+    let position = cart.length;
+    if (custom.editKey) {
+        position = cart.findIndex((l) => l.key === custom.editKey);
+        if (position > -1) cart.splice(position, 1); else position = cart.length;
+    }
+    const same = cart.find((l) => l.key === key);
+    if (same) same.qty = Math.min(MAX_QTY, same.qty + qty);
+    else cart.splice(position, 0, line);
+
+    const editing = !!custom.editKey;
+    closeModal("customModal");
+    cartChanged();
+    if (!editing) {
+        showToast(`已加入「${item.title}」×${qty}`);
+        const icon = $("cartBarIcon");
+        icon.classList.remove("bump"); void icon.offsetWidth; icon.classList.add("bump");
+    }
+}
+
+// =====================================================================
+//  茶籃
+// =====================================================================
+function cartChanged() {
+    saveCart();
+    renderCart();
+    renderMenu();
+}
+
+function renderCart() {
+    const count = cartCount();
+    const total = cartTotal();
+    const badge = $("cartBadge");
+    badge.textContent = count;
+    badge.classList.toggle("hidden", !count);
+    badge.classList.toggle("flex", !!count);
+    $("cartBarCount").textContent = count;
+    $("cartBarTotal").textContent = formatNT(total);
+    $("cartBar").style.transform = count ? "translateY(0)" : "";
+    $("cartDrawerTotal").textContent = formatNT(total);
+    $("checkoutBtn").disabled = !count;
+
+    const last = loadJSON(STORAGE.lastOrder, null);
+    $("cartItemsList").innerHTML = cart.length
+        ? cart.map((l, idx) => `
+            <div class="bg-white p-3 rounded-xl border border-stone-200">
+                <div class="flex justify-between items-start gap-3">
+                    <button type="button" data-act="edit-line" data-idx="${idx}" class="text-left min-w-0 flex-1">
+                        <span class="block font-bold">${esc(l.title)}</span>
+                        <span class="block text-xs text-stone-500 mt-0.5">${esc([l.ice, l.sugar].filter(Boolean).join("・"))}${l.toppings.length ? `・加 ${esc(l.toppings.join("、"))}` : ""}</span>
+                        ${l.note ? `<span class="block text-xs text-vintage-terracotta mt-0.5">※ ${esc(l.note)}</span>` : ""}
+                        <span class="block text-xs text-vintage-woodLight underline mt-1">修改</span>
+                    </button>
+                    <span class="font-bold text-vintage-terracotta whitespace-nowrap">${formatNT(l.unitPrice * l.qty)}</span>
+                </div>
+                <div class="flex justify-between items-center mt-2 pt-2 border-t border-stone-100">
+                    <span class="text-xs text-stone-400">單價 ${formatNT(l.unitPrice)}</span>
+                    <div class="flex items-center gap-1 bg-stone-100 rounded-full p-0.5">
+                        <button type="button" data-act="line-qty" data-idx="${idx}" data-delta="-1" aria-label="減少" class="w-9 h-9 rounded-full bg-white font-black">${l.qty === 1 ? '<i class="fa-solid fa-trash-can text-xs text-red-700"></i>' : "−"}</button>
+                        <span class="w-7 text-center font-black">${l.qty}</span>
+                        <button type="button" data-act="line-qty" data-idx="${idx}" data-delta="1" aria-label="增加" class="w-9 h-9 rounded-full bg-white font-black">+</button>
+                    </div>
+                </div>
+            </div>`).join("")
+        : `<div class="text-center py-12 text-stone-400 space-y-3">
+                <i class="fa-solid fa-basket-shopping text-4xl"></i>
+                <p class="text-sm">購物籃是空的<br><span class="text-xs">Your cart is empty</span></p>
+                ${last ? `<button type="button" data-act="show-last-order" class="text-sm font-bold text-vintage-woodLight underline">查看上一筆訂單 #${esc(last.no)}</button>` : ""}
+            </div>`;
+}
+
+function changeLineQty(idx, delta) {
+    const l = cart[idx];
+    if (!l) return;
+    l.qty = Math.min(MAX_QTY, l.qty + delta);
+    if (l.qty <= 0) cart.splice(idx, 1);
+    cartChanged();
+}
+
+let drawerOpen = false;
+function openCart() {
+    drawerOpen = true;
+    $("toastBox").replaceChildren();
+    $("cartDrawer").classList.remove("translate-x-full");
+    $("cartOverlay").classList.remove("hidden");
+    updateScrollLock();
+}
+function closeCart() {
+    drawerOpen = false;
+    $("cartDrawer").classList.add("translate-x-full");
+    $("cartOverlay").classList.add("hidden");
+    updateScrollLock();
+}
+
+// =====================================================================
+//  結帳
+// =====================================================================
+function orderType() { return document.querySelector('input[name="orderType"]:checked').value; }
+
+function syncOrderTypeFields() {
+    const dineIn = orderType() === "DINE_IN";
+    $("tableField").classList.toggle("hidden", !dineIn);
+    $("pickupField").classList.toggle("hidden", dineIn);
+    $("custTable").required = dineIn;
+    $("custPhone").required = !dineIn;                  // 外帶需要電話，餐點好了才能聯絡
+    $("phoneReq").textContent = dineIn ? "（選填）" : "*";
+}
+
+function openCheckout() {
+    if (!cart.length) return;
+    closeCart();
+    const saved = loadJSON(STORAGE.customer, {});
+    if (!$("custName").value && saved.name) $("custName").value = saved.name;
+    if (!$("custPhone").value && saved.phone) $("custPhone").value = saved.phone;
+    if (tableFromUrl) $("custTable").value = tableFromUrl;
+    $("checkoutSummary").innerHTML = cart.map((l) => `<div class="flex justify-between gap-2"><span>${esc(l.title)} ×${l.qty}</span><span>${formatNT(l.unitPrice * l.qty)}</span></div>`).join("")
+        + `<div class="flex justify-between font-black text-vintage-terracotta border-t border-vintage-borderGold/40 pt-1 mt-1"><span>合計</span><span>${formatNT(cartTotal())}</span></div>`;
+    $("checkoutTotal").textContent = formatNT(cartTotal());
+    syncOrderTypeFields();
+    openModal("checkoutModal");
+}
+
+function orderNumber() {
+    const d = new Date();
+    return `${pad2(d.getHours())}${pad2(d.getMinutes())}-${String(Math.floor(Math.random() * 90) + 10)}`;
+}
+
+function orderText(o) {
+    const lines = [
+        `【${siteTexts.brandTitle} 新訂單】#${o.no}`,
+        o.type === "DINE_IN" ? `內用｜桌號 ${o.table}` : `外帶｜取餐：${o.pickup}`,
+        `稱呼：${o.name}${o.phone ? `　電話：${o.phone}` : ""}`,
+        "────────",
+        ...o.items.map((l, i) => {
+            const opts = [l.ice, l.sugar, l.toppings.length ? `加 ${l.toppings.join("、")}` : ""].filter(Boolean).join("／");
+            return `${i + 1}) ${l.title} ×${l.qty}　${formatNT(l.unitPrice * l.qty)}\n   ${opts}${l.note ? `\n   備註：${l.note}` : ""}`;
+        }),
+        "────────",
+        `合計 ${formatNT(o.total)}｜付款：${o.payment}`
+    ];
+    return lines.join("\n");
+}
+
+function submitOrder(e) {
+    e.preventDefault();
+    const form = $("orderForm");
+    if (!form.reportValidity()) return;
+    if (!cart.length) return;
+    const dineIn = orderType() === "DINE_IN";
+    const mins = Number($("pickupTime").value);
+    const pickupAt = new Date(Date.now() + mins * 60000);
+    const order = {
+        no: orderNumber(),
+        createdAt: Date.now(),
+        type: dineIn ? "DINE_IN" : "TAKEAWAY",
+        table: dineIn ? $("custTable").value.trim().toUpperCase() : "",
+        pickup: mins ? `${pad2(pickupAt.getHours())}:${pad2(pickupAt.getMinutes())}` : "盡快",
+        name: $("custName").value.trim(),
+        phone: $("custPhone").value.trim(),
+        payment: document.querySelector('input[name="payment"]:checked')?.value || SHOP.payments[0],
+        items: cart.map((l) => ({ ...l })),
+        total: cartTotal()
+    };
+    if ($("rememberMe").checked) storageTrySet(STORAGE.customer, JSON.stringify({ name: order.name, phone: order.phone }));
+    else storageTrySet(STORAGE.customer, "{}");
+    storageTrySet(STORAGE.lastOrder, JSON.stringify(order));
+    // TODO: 若之後有後端，在此 fetch POST 訂單。目前訂單只存在顧客手機，需透過 LINE 傳送或出示畫面給店員。
+
+    cart = [];
+    cartChanged();
+    closeModal("checkoutModal");
+    showReceipt(order, true);
+}
+
+function showReceipt(o, fresh) {
+    const lineUrl = SHOP.lineId ? `https://line.me/R/oaMessage/${encodeURIComponent(SHOP.lineId)}/?${encodeURIComponent(orderText(o))}` : "";
+    $("successBody").innerHTML = `
+        <div class="text-center">
+            <div class="w-14 h-14 bg-emerald-100 text-vintage-palmGreen rounded-full flex items-center justify-center mx-auto mb-2 text-2xl border border-emerald-300"><i class="fa-solid fa-receipt"></i></div>
+            <h3 class="vintage-title font-bold text-2xl">${fresh ? "訂單已建立" : "上一筆訂單"}</h3>
+            <p class="text-xs text-stone-500">${SHOP.lineId ? "請按下方按鈕傳送給店家，店家收到才開始製作" : "請將此畫面出示給店員確認・Please show this screen to our staff"}</p>
+        </div>
+        <div class="my-4 rounded-xl border-2 border-dashed border-vintage-borderGold bg-amber-50/60 p-4">
+            <div class="flex items-end justify-between border-b border-vintage-borderGold/40 pb-2 mb-2">
+                <div><div class="text-[11px] text-stone-500">訂單編號</div><div class="font-mono font-black text-3xl tracking-wider">#${esc(o.no)}</div></div>
+                <div class="text-right"><div class="vintage-title font-black text-xl text-vintage-terracotta">${o.type === "DINE_IN" ? `${esc(o.table)} 桌` : "外帶"}</div>
+                <div class="text-xs text-stone-500">${o.type === "DINE_IN" ? "內用" : `取餐 ${esc(o.pickup)}`}</div></div>
+            </div>
+            <div class="text-sm space-y-2">
+                ${o.items.map((l) => `<div><div class="flex justify-between gap-2 font-bold"><span>${esc(l.title)} ×${l.qty}</span><span>${formatNT(l.unitPrice * l.qty)}</span></div>
+                    <div class="text-xs text-stone-500">${esc([l.ice, l.sugar].filter(Boolean).join("・"))}${l.toppings.length ? `・加 ${esc(l.toppings.join("、"))}` : ""}${l.note ? `・※ ${esc(l.note)}` : ""}</div></div>`).join("")}
+            </div>
+            <div class="border-t border-vintage-borderGold/40 mt-3 pt-2 text-sm text-stone-600">
+                <div>稱呼：${esc(o.name)}${o.phone ? `・${esc(o.phone)}` : ""}</div>
+                <div>付款：${esc(o.payment)}（於櫃檯付款）</div>
+            </div>
+            <div class="flex justify-between font-black text-xl text-vintage-terracotta vintage-title mt-2"><span>合計</span><span>${formatNT(o.total)}</span></div>
+        </div>
+        <div class="space-y-2">
+            ${lineUrl ? `<a href="${esc(lineUrl)}" target="_blank" rel="noopener" class="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-black text-white bg-[#06C755] hover:brightness-95"><i class="fa-brands fa-line text-xl"></i>用 LINE 傳送訂單給店家</a>` : ""}
+            <button type="button" data-act="copy-order" class="w-full py-3 vintage-btn-secondary rounded-xl font-bold"><i class="fa-regular fa-copy mr-1.5"></i>複製訂單內容</button>
+            <button type="button" data-act="close-modal" data-modal="successModal" class="w-full py-3 bg-vintage-woodDark text-amber-200 font-bold rounded-xl hover:bg-stone-800">返回菜單</button>
+        </div>`;
+    $("successBody").dataset.order = JSON.stringify(o);
+    openModal("successModal");
+}
+
+async function copyOrder() {
+    const o = JSON.parse($("successBody").dataset.order || "null");
+    if (!o) return;
+    const text = orderText(o);
+    try { await navigator.clipboard.writeText(text); showToast("已複製訂單內容"); }
+    catch {
+        const ta = document.createElement("textarea");
+        ta.value = text; document.body.appendChild(ta); ta.select();
+        try { document.execCommand("copy"); showToast("已複製訂單內容"); } catch { showToast("無法自動複製，請手動截圖"); }
+        ta.remove();
+    }
+}
+
+// =====================================================================
+//  後台
+// =====================================================================
+function verifyAdmin() {
+    const pwd = $("adminPwdInput").value;
+    $("adminPwdInput").value = "";
+    if (pwd !== SHOP.adminPassword) return showDialog("error", "驗證失敗", "密碼錯誤，請重新輸入！");
+    isAdminMode = true;
+    closeModal("pwdModal");
+    $("adminBanner").classList.replace("hidden", "flex");
+    $("adminIcon").className = "fa-solid fa-lock-open text-vintage-mangoGold";
+    resetAdminTimer();
+    renderCategoryTabs();
+    renderMenu();
+}
+function exitAdmin() {
+    isAdminMode = false;
+    clearTimeout(adminTimer);
+    $("adminBanner").classList.replace("flex", "hidden");
+    $("adminIcon").className = "fa-solid fa-lock";
+    renderCategoryTabs();
+    renderMenu();
+}
+function resetAdminTimer() {
+    if (!isAdminMode) return;
+    clearTimeout(adminTimer);
+    adminTimer = setTimeout(() => { exitAdmin(); showToast("後台閒置過久，已自動登出"); }, ADMIN_IDLE_MS);
+}
+
+function openSettings() {
+    $("siteSettingsForm").innerHTML = SETTINGS_FIELDS.map(([key, label, span]) => `
+        <label class="block ${span === 2 ? "md:col-span-2" : ""}"><span class="block text-xs font-bold mb-1">${esc(label)}</span>
+        <input data-setting="${key}" maxlength="120" class="w-full px-3 py-2 border border-stone-300 rounded bg-white focus:ring-2 focus:ring-vintage-mangoGold outline-none"></label>`).join("");
+    document.querySelectorAll("[data-setting]").forEach((el) => { el.value = siteTexts[el.dataset.setting]; });
+    openModal("siteSettingsModal");
+}
+function saveSettings(e) {
+    e.preventDefault();
+    document.querySelectorAll("[data-setting]").forEach((el) => {
+        siteTexts[el.dataset.setting] = el.value.trim() || DEFAULT_SITE_TEXTS[el.dataset.setting];
+    });
+    if (!storageTrySet(STORAGE.texts, JSON.stringify(siteTexts))) showDialog("error", "儲存失敗", "瀏覽器空間不足。");
+    applySiteTexts();
+    renderCategoryTabs();
+    renderMenu();
+    closeModal("siteSettingsModal");
+}
+
+function openEditItem(id) {
+    $("editItemForm").reset();
+    pendingImage = null;
+    $("editCategory").innerHTML = allCategoryKeys().map((k) => `<option value="${k}">${esc(getCategoryName(k))}</option>`).join("");
+    const item = id ? findItem(id) : null;
+    $("editModalHeaderTitle").textContent = item ? "編輯菜單品項" : "新增菜單品項";
+    $("editItemId").value = item ? item.id : "";
+    if (item) {
+        $("editTitle").value = item.title;
+        $("editSubtitle").value = item.subtitle || "";
+        $("editDesc").value = item.desc || "";
+        $("editPrice").value = item.price;
+        $("editCategory").value = item.category;
+        $("editImgUrl").value = item.imgUrl && !item.imgUrl.startsWith("data:") ? item.imgUrl : "";
+        pendingImage = item.imgUrl && item.imgUrl.startsWith("data:") ? item.imgUrl : null;
+        $("editTags").value = (item.tags || []).join(", ");
+    } else if (activeCategory !== "all") {
+        $("editCategory").value = activeCategory;
+    }
+    previewEditImage();
+    openModal("editItemModal");
+}
+function currentEditImage() { return $("editImgUrl").value.trim() || pendingImage || ""; }
+function previewEditImage() {
+    const url = currentEditImage();
+    $("editImgPreview").innerHTML = !url ? "尚未設置圖片"
+        : isSafeImg(url) ? `<img src="${esc(url)}" data-preview alt="預覽" class="w-full h-full object-cover">`
+        : `<span class="text-red-700">網址需以 https:// 開頭</span>`;
+}
+// 上傳圖片 → 縮到最長邊 800px、轉 JPEG，避免塞爆瀏覽器儲存空間
+function compressImage(file) {
+    return new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+            const scale = Math.min(1, 800 / Math.max(img.width, img.height));
+            const canvas = document.createElement("canvas");
+            canvas.width = Math.round(img.width * scale);
+            canvas.height = Math.round(img.height * scale);
+            canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+            URL.revokeObjectURL(url);
+            resolve(canvas.toDataURL("image/jpeg", 0.8));
+        };
+        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("無法讀取圖片")); };
+        img.src = url;
+    });
+}
+function saveItem(e) {
+    e.preventDefault();
+    const id = parseInt($("editItemId").value, 10);
+    const title = $("editTitle").value.trim();
+    const price = Number($("editPrice").value);
+    const imgUrl = currentEditImage();
+    if (!title || !Number.isInteger(price) || price < 0) return showDialog("error", "資料不完整", "請填寫品名，價格須為 0 以上的整數。");
+    if (imgUrl && !isSafeImg(imgUrl)) return showDialog("error", "圖片網址無效", "請輸入 https:// 開頭的網址，或改用上傳。");
+    const fields = {
+        title, price, imgUrl,
+        subtitle: $("editSubtitle").value.trim(),
+        desc: $("editDesc").value.trim(),
+        category: $("editCategory").value,
+        tags: $("editTags").value.split(/[,，]/).map((t) => t.trim()).filter(Boolean)
+    };
+    const backup = menuData;
+    if (id) menuData = menuData.map((i) => (i.id === id ? { ...i, ...fields } : i));
+    else menuData = [...menuData, { id: menuData.length ? Math.max(...menuData.map((i) => i.id)) + 1 : 1, ...fields }];
+    if (!saveMenu()) { menuData = backup; return; }
+    closeModal("editItemModal");
+    renderCategoryTabs();
+    renderMenu();
+    showToast(id ? `已更新「${title}」` : `已新增「${title}」`);
+}
+
+// =====================================================================
+//  彈窗 / 提示
+// =====================================================================
+const MODALS = ["customModal", "checkoutModal", "successModal", "pwdModal", "siteSettingsModal", "editItemModal", "catEditModal", "dialogModal"];
+function updateScrollLock() {
+    const open = drawerOpen || MODALS.some((id) => !$(id).classList.contains("hidden"));
+    document.body.classList.toggle("modal-open", open);
+}
+function openModal(id) { $("toastBox").replaceChildren(); $(id).classList.remove("hidden"); updateScrollLock(); }
+function closeModal(id) {
+    $(id).classList.add("hidden");
+    if (id === "customModal") custom = null;
+    updateScrollLock();
+}
+
+function showDialog(type, title, message, onConfirm) {
+    const icon = $("dialogIcon");
+    if (type === "confirm") {
+        icon.className = "w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl border bg-amber-100 text-amber-600 border-amber-300";
+        icon.innerHTML = '<i class="fa-solid fa-circle-question"></i>';
+    } else {
+        icon.className = "w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl border bg-red-100 text-red-600 border-red-300";
+        icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+    }
+    $("dialogTitle").textContent = title;
+    $("dialogMessage").textContent = message;
+    $("dialogCancel").classList.toggle("hidden", type !== "confirm");
+    dialogCb = onConfirm || null;
+    openModal("dialogModal");
+}
+
+function showToast(msg) {
+    const box = $("toastBox");
+    while (box.children.length >= 2) box.firstElementChild.remove();
+    const el = document.createElement("div");
+    el.setAttribute("role", "status");
+    el.className = "toast-in bg-vintage-woodDark text-amber-100 text-sm font-bold px-4 py-2.5 rounded-full shadow-xl border border-vintage-borderGold flex items-center gap-2";
+    const i = document.createElement("i"); i.className = "fa-solid fa-circle-check text-vintage-mangoGold";
+    const s = document.createElement("span"); s.textContent = msg;
+    el.append(i, s);
+    box.appendChild(el);
+    setTimeout(() => el.remove(), 2200);
+}
+
+// =====================================================================
+//  事件（事件委派，不把資料拼進 onclick 字串）
+// =====================================================================
+function handleAction(el, e) {
+    const id = Number(el.dataset.id);
+    switch (el.dataset.act) {
+        case "scroll-top": return window.scrollTo({ top: 0, behavior: "smooth" });
+        case "toggle-search": {
+            const row = $("mobileSearchRow");
+            row.classList.toggle("hidden");
+            if (!row.classList.contains("hidden")) row.querySelector("input").focus();
+            return;
+        }
+        case "clear-search": return setSearch("", null);
+        case "cat": return selectCategory(el.dataset.cat);
+        case "edit-cat": e.stopPropagation(); return openEditCategory(el.dataset.cat);
+        case "reset-cat": return resetCategory();
+        case "add-cat": return openEditCategory("");
+        case "delete-cat": return deleteCategory();
+        case "open-item": if (SHOP_INFO.ordering === false) return; return openCustomize(id);
+        case "custom-qty":
+            if (custom) { custom.qty = Math.max(1, Math.min(MAX_QTY, custom.qty + Number(el.dataset.delta))); updateCustomPrice(); }
+            return;
+        case "custom-commit": return commitCustom();
+        case "open-cart": return openCart();
+        case "close-cart": return closeCart();
+        case "edit-line": {
+            const l = cart[Number(el.dataset.idx)];
+            if (l) { closeCart(); openCustomize(l.id, l.key); }
+            return;
+        }
+        case "line-qty": return changeLineQty(Number(el.dataset.idx), Number(el.dataset.delta));
+        case "open-checkout": return openCheckout();
+        case "copy-order": return copyOrder();
+        case "show-last-order": {
+            const last = loadJSON(STORAGE.lastOrder, null);
+            if (last) { closeCart(); showReceipt(last, false); }
+            return;
+        }
+        case "close-modal": return closeModal(el.dataset.modal);
+        case "dialog-ok": {
+            const cb = dialogCb; dialogCb = null;
+            closeModal("dialogModal");
+            return cb && cb();
+        }
+        case "admin-lock":
+            if (isAdminMode) return exitAdmin();
+            openModal("pwdModal");
+            return setTimeout(() => $("adminPwdInput").focus(), 50);
+        case "verify-admin": return verifyAdmin();
+        case "exit-admin": return exitAdmin();
+        case "open-settings": return openSettings();
+        case "new-item": return openEditItem(null);
+        case "edit-item": e.stopPropagation(); return openEditItem(id);
+        case "delete-item": {
+            e.stopPropagation();
+            const item = findItem(id);
+            return showDialog("confirm", "刪除確認", `確定要刪除「${item ? item.title : "這個品項"}」嗎？`, () => {
+                const backup = menuData;
+                menuData = menuData.filter((i) => i.id !== id);
+                if (!saveMenu()) { menuData = backup; return; }
+                renderCategoryTabs();
+                renderMenu();
+            });
+        }
+        case "reset-all":
+            return showDialog("confirm", "重置確認", "確定要把菜單與全站文字恢復為預設嗎？", () => {
+                menuData = DEFAULT_MENU.map((i) => ({ ...i, tags: [...i.tags] }));
+                siteTexts = { ...DEFAULT_SITE_TEXTS, catIcons: { ...DEFAULT_SITE_TEXTS.catIcons }, customCats: [] };
+                saveMenu();
+                storageTrySet(STORAGE.texts, JSON.stringify(siteTexts));
+                applySiteTexts();
+                renderCategoryTabs();
+                renderMenu();
+            });
+    }
+}
+
+function bindEvents() {
+    document.addEventListener("click", (e) => {
+        const el = e.target.closest("[data-act]");
+        if (el) handleAction(el, e);
+    });
+    // 選項（冰量 / 甜度 / 加料）
+    $("customModal").addEventListener("change", (e) => {
+        if (!custom) return;
+        const t = e.target;
+        if (t.dataset.opt === "ice") custom.ice = t.value;
+        if (t.dataset.opt === "sugar") custom.sugar = t.value;
+        if (t.dataset.opt === "topping") { t.checked ? custom.toppings.add(t.value) : custom.toppings.delete(t.value); updateCustomPrice(); }
+    });
+    document.querySelectorAll("[data-search]").forEach((el) => el.addEventListener("input", () => setSearch(el.value, el)));
+    document.querySelectorAll('input[name="orderType"]').forEach((el) => el.addEventListener("change", syncOrderTypeFields));
+    $("custTable").addEventListener("input", (e) => { e.target.value = e.target.value.toUpperCase(); });
+    $("orderForm").addEventListener("submit", submitOrder);
+    $("siteSettingsForm").addEventListener("submit", saveSettings);
+    $("editItemForm").addEventListener("submit", saveItem);
+    $("catEditForm").addEventListener("submit", saveCategory);
+    $("editImgUrl").addEventListener("input", () => { if ($("editImgUrl").value.trim()) pendingImage = null; previewEditImage(); });
+    $("editImgFile").addEventListener("change", async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        try {
+            pendingImage = await compressImage(file);
+            $("editImgUrl").value = "";
+            previewEditImage();
+        } catch { showDialog("error", "圖片無法讀取", "請換一張 JPG 或 PNG 圖片。"); }
+        e.target.value = "";
+    });
+    $("adminPwdInput").addEventListener("keydown", (e) => { if (e.key === "Enter") verifyAdmin(); });
+
+    // 圖片載入失敗 → 本地備用圖（不依賴外部 placeholder 網站）
+    document.addEventListener("error", (e) => {
+        const img = e.target;
+        if (!(img instanceof HTMLImageElement) || img.dataset.failed) return;
+        img.dataset.failed = "1";
+        if ("preview" in img.dataset) img.parentElement.innerHTML = '<span class="text-red-700">圖片無法載入</span>';
+        else img.src = FALLBACK_IMG;
+    }, true);
+
+    MODALS.forEach((id) => $(id).addEventListener("click", (e) => { if (e.target === e.currentTarget) closeModal(id); }));
+    document.addEventListener("keydown", (e) => {
+        if (e.key !== "Escape") return;
+        const top = [...MODALS].reverse().find((id) => !$(id).classList.contains("hidden"));
+        if (top) closeModal(top); else if (drawerOpen) closeCart();
+    });
+    ["pointerdown", "keydown"].forEach((ev) => document.addEventListener(ev, resetAdminTimer, { passive: true }));
+
+    // 讓分類列永遠貼在 header 下方（header 高度會因後台橫幅 / 搜尋列而改變）
+    const setHeaderH = () => document.documentElement.style.setProperty("--header-h", `${$("siteHeader").offsetHeight}px`);
+    new ResizeObserver(setHeaderH).observe($("siteHeader"));
+    setHeaderH();
+}
+
+// =====================================================================
+//  啟動
+// =====================================================================
+document.addEventListener("DOMContentLoaded", () => {
+    loadMenu();
+    loadTexts();
+    loadCart();
+    applySiteTexts();
+    $("pickupTime").innerHTML = (SITE.pickup && SITE.pickup.length ? SITE.pickup : [[0, "盡快"]])
+        .map(([m, label]) => `<option value="${Number(m) || 0}">${esc(label)}</option>`).join("");
+    document.body.classList.toggle("no-order", SHOP_INFO.ordering === false);
+    $("paymentOptions").innerHTML = SHOP.payments.map((p, i) => `<label class="cursor-pointer">
+        <input type="radio" name="payment" value="${esc(p)}" class="peer sr-only" ${i === 0 ? "checked" : ""}>
+        <span class="block text-center px-1 py-2.5 rounded-lg border-2 text-xs sm:text-sm font-bold border-stone-300 bg-white peer-checked:border-vintage-mangoGold peer-checked:bg-amber-100/70 peer-focus-visible:ring-2 peer-focus-visible:ring-vintage-mangoGold">${esc(p)}</span>
+    </label>`).join("");
+    if (tableFromUrl) {
+        $("tableBanner").classList.remove("hidden");
+        $("tableBannerText").textContent = `您在 ${tableFromUrl} 桌點餐・Table ${tableFromUrl}`;
+    }
+    bindEvents();
+    renderCategoryTabs();
+    renderMenu();
+    renderCart();
+});
+</script>
+</body>
+</html>
