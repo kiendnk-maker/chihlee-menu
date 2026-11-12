@@ -8,6 +8,7 @@
 |---|---|
 | `templates/*.html` | 8 種版型，用瀏覽器打開就能看樣子、測試點餐 |
 | `menu-sample.xlsx` | 菜單範例，照這個格式填自己的菜單 |
+| `examples/macu_ocean_menu.html` | 實際範例：MACU TEA 麻古茶坊菜單（Seaside 版型改的） |
 | `screenshots/*.png` | 每個版型的電腦版／手機版截圖 |
 
 ### 8 種版型
@@ -37,6 +38,16 @@
 | **海邊咖啡 Seaside Lite**<br>[`seaside.html`](templates/seaside.html) | <img src="screenshots/seaside.png" width="480"> | <img src="screenshots/seaside-mobile.png" width="160"> |
 | **和風墨色 Sumi**<br>[`sumi.html`](templates/sumi.html) | <img src="screenshots/sumi.png" width="480"> | <img src="screenshots/sumi-mobile.png" width="160"> |
 | **經典海邊 Classic**<br>[`classic.html`](templates/classic.html) | <img src="screenshots/classic.png" width="480"> | <img src="screenshots/classic-mobile.png" width="160"> |
+
+## 實際範例：MACU TEA 麻古茶坊
+
+[`examples/macu_ocean_menu.html`](examples/macu_ocean_menu.html)（由 Seaside 版型修改）
+
+| 電腦 Desktop | 手機 Mobile |
+|---|---|
+| <img src="screenshots/macu_ocean_menu.png" width="480"> | <img src="screenshots/macu_ocean_menu-mobile.png" width="160"> |
+
+Raw：`https://raw.githubusercontent.com/kiendnk-maker/chihlee-menu/main/examples/macu_ocean_menu.html`
 
 ## 直接取用（Raw 網址）
 
