@@ -8,6 +8,7 @@
 |---|---|
 | `templates/*.html` | 8 種版型，用瀏覽器打開就能看樣子、測試點餐 |
 | `menu-sample.xlsx` | 菜單範例，照這個格式填自己的菜單 |
+| `screenshots/*.png` | 每個版型的電腦版／手機版截圖 |
 
 ### 8 種版型
 
@@ -23,6 +24,19 @@
 | 經典海邊 Classic | [`classic.html`](templates/classic.html) | 原本的完整版（Tailwind） | 想要原版的人 |
 
 前 7 種是輕量版（約 45 KB），共用同一套點餐程式；Classic 約 100 KB。
+
+## 版型預覽 Screenshots
+
+| 版型 | 電腦 Desktop | 手機 Mobile |
+|---|---|---|
+| **極簡白 Minimal**<br>[`minimal.html`](templates/minimal.html) | <img src="screenshots/minimal.png" width="480"> | <img src="screenshots/minimal-mobile.png" width="160"> |
+| **夜色酒吧 Night Bar**<br>[`nightbar.html`](templates/nightbar.html) | <img src="screenshots/nightbar.png" width="480"> | <img src="screenshots/nightbar-mobile.png" width="160"> |
+| **法式小館 Bistro**<br>[`bistro.html`](templates/bistro.html) | <img src="screenshots/bistro.png" width="480"> | <img src="screenshots/bistro-mobile.png" width="160"> |
+| **手搖飲 Bubble Tea**<br>[`bubbletea.html`](templates/bubbletea.html) | <img src="screenshots/bubbletea.png" width="480"> | <img src="screenshots/bubbletea-mobile.png" width="160"> |
+| **黑板手寫 Chalkboard**<br>[`chalkboard.html`](templates/chalkboard.html) | <img src="screenshots/chalkboard.png" width="480"> | <img src="screenshots/chalkboard-mobile.png" width="160"> |
+| **海邊咖啡 Seaside Lite**<br>[`seaside.html`](templates/seaside.html) | <img src="screenshots/seaside.png" width="480"> | <img src="screenshots/seaside-mobile.png" width="160"> |
+| **和風墨色 Sumi**<br>[`sumi.html`](templates/sumi.html) | <img src="screenshots/sumi.png" width="480"> | <img src="screenshots/sumi-mobile.png" width="160"> |
+| **經典海邊 Classic**<br>[`classic.html`](templates/classic.html) | <img src="screenshots/classic.png" width="480"> | <img src="screenshots/classic-mobile.png" width="160"> |
 
 ## 直接取用（Raw 網址）
 
